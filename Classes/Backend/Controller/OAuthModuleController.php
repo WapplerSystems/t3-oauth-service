@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace WapplerSystems\OauthService\Backend\Controller;
 
 use Psr\Http\Message\ResponseInterface;
-use WapplerSystems\OauthService\Repository\ClientRepository;
-use WapplerSystems\OauthService\Repository\ConnectionRepository;
+use WapplerSystems\OauthService\Domain\Repository\ClientRepository;
+use WapplerSystems\OauthService\Domain\Repository\ConnectionRepository;
 use WapplerSystems\OauthService\Service\OAuthFlowService;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
@@ -33,8 +33,7 @@ final class OAuthModuleController extends ActionController
             'now' => time(),
         ]);
 
-        $moduleTemplate->setContent($this->view->render());
-        return $this->htmlResponse($moduleTemplate->renderContent());
+        return $this->htmlResponse($moduleTemplate->render('Backend/Index'));
     }
 
     public function connectAction(): ResponseInterface

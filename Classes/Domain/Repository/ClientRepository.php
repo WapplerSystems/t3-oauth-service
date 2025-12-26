@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace WapplerSystems\OauthService\Repository;
+namespace WapplerSystems\OauthService\Domain\Repository;
 
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;

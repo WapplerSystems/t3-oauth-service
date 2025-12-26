@@ -17,3 +17,13 @@ services:
 
   WapplerSystems\OauthService\Provider\GenericOAuth2Provider:
     public: true
+
+  # Provider-Interface Tag (alle Provider bekommen diesen Tag)
+  _instanceof:
+    WapplerSystems\OauthService\Provider\OAuthProviderInterface:
+      tags: ['oauth_service.provider']
+
+  # ProviderResolver bekommt alle Provider per tagged iterator
+  WapplerSystems\OauthService\Provider\ProviderResolver:
+    arguments:
+      $providers: !tagged_iterator oauth_service.provider

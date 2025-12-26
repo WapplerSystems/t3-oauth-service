@@ -6,3 +6,14 @@ services:
 
   WapplerSystems\OauthService\:
     resource: '../Classes/*'
+
+
+  WapplerSystems\OauthService\Registry\ClientRegistryInterface:
+    alias: WapplerSystems\OauthService\Registry\ClientRegistry
+    public: true
+
+  WapplerSystems\OauthService\Registry\ClientRegistry:
+    public: true
+
+  WapplerSystems\OauthService\Provider\GenericOAuth2Provider:
+    public: true

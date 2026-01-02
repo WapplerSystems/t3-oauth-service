@@ -8,22 +8,16 @@ services:
     resource: '../Classes/*'
 
 
-  WapplerSystems\OauthService\Registry\ClientRegistryInterface:
-    alias: WapplerSystems\OauthService\Registry\ClientRegistry
+  WapplerSystems\OauthService\Provider\ProviderRegistryInterface:
+    alias: WapplerSystems\OauthService\Provider\ProviderRegistry
     public: true
 
-  WapplerSystems\OauthService\Registry\ClientRegistry:
+  WapplerSystems\OauthService\Provider\ProviderRegistry:
     public: true
 
-  WapplerSystems\OauthService\Provider\GenericOAuth2Provider:
+  WapplerSystems\OauthService\Provider\Type\GenericOAuth2ProviderType:
     public: true
 
-  # Provider-Interface Tag (alle Provider bekommen diesen Tag)
-  _instanceof:
-    WapplerSystems\OauthService\Provider\OAuthProviderInterface:
-      tags: ['oauth_service.provider']
-
-  # ProviderResolver bekommt alle Provider per tagged iterator
-  WapplerSystems\OauthService\Provider\ProviderResolver:
+  WapplerSystems\OauthService\Provider\Type\ProviderTypeResolver:
     arguments:
-      $providers: !tagged_iterator oauth_service.provider
+      $providerTypes: !tagged_locator { tag: 'oauth_service.providertype', index_by: 'identifier' }

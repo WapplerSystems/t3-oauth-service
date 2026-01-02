@@ -5,8 +5,8 @@ namespace WapplerSystems\OauthService\Service;
 
 use WapplerSystems\OauthService\Crypto\CryptoService;
 use WapplerSystems\OauthService\Provider\ProviderResolver;
-use WapplerSystems\OauthService\Repository\ClientRepository;
-use WapplerSystems\OauthService\Repository\ConnectionRepository;
+use WapplerSystems\OauthService\Domain\Repository\ClientRepository;
+use WapplerSystems\OauthService\Domain\Repository\ConnectionRepository;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 
 final class MonitoringService

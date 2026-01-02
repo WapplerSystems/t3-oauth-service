@@ -1,0 +1,37 @@
+<html
+    xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    xmlns:be="http://typo3.org/ns/TYPO3/CMS/Backend/ViewHelpers"
+    xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+    data-namespace-typo3-fluid="true"
+>
+
+<f:layout name="Module"/>
+
+<f:section name="Content">
+    <h1>
+        <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:title"/>
+    </h1>
+
+
+    <form action="{formURI}" method="get" target="_top">
+
+        <f:form.hidden name="oauthservice" value="{oauthservice}" />
+
+        <div class="form-group">
+            <label for="clientId" class="form-label">Client ID</label>
+            <f:form.textfield id="clientId" name="clientId" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label for="clientSecret" class="form-label">Client Secret</label>
+            <f:form.textfield id="clientSecret" name="clientSecret" class="form-control" />
+        </div>
+
+
+        <f:form.submit class="btn btn-primary" value="Weiter" />
+
+    </form>
+
+
+</f:section>
+
+</html>

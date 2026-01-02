@@ -1,0 +1,266 @@
+<html
+    xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    xmlns:be="http://typo3.org/ns/TYPO3/CMS/Backend/ViewHelpers"
+    xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+    data-namespace-typo3-fluid="true"
+>
+
+<f:layout name="Module"/>
+
+<f:section name="Content">
+    <h1>
+        <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:title"/>
+    </h1>
+
+    <div class="typo3-module-body">
+        <f:if condition="{configuredClients -> f:count()}">
+            <f:then>
+                <f:for each="{configuredClients}" as="client">
+
+                        <div class="panel panel-default" style="margin-bottom: 18px;">
+                            <div class="panel-heading" style="display: flex; align-items: center; justify-content: space-between;">
+                                <strong>{client.title}</strong>
+
+                                <f:link.action
+                                    action="deleteClient"
+                                    arguments="{client: client.uid}"
+                                    class="btn btn-danger btn-sm">
+                                    <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.deleteClient"/>
+                                </f:link.action>
+                            </div>
+
+                            <div class="panel-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <dl class="dl-horizontal">
+                                            <dt>
+                                                <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:client.provider"/>
+                                            </dt>
+                                            <dd>{client.provider}</dd>
+
+                                            <dt>
+                                                <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:client.notifyEmail"/>
+                                            </dt>
+                                            <dd>
+                                                <f:if condition="{client.notifyEmail}">
+                                                    <f:then>{client.notifyEmail}</f:then>
+                                                    <f:else>-</f:else>
+                                                </f:if>
+                                            </dd>
+
+                                            <dt>
+                                                <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:client.isActive"/>
+                                            </dt>
+                                            <dd>
+                                                <f:if condition="{client.isActive}">
+                                                    <f:then>
+                                                        <span class="label label-success">1</span>
+                                                    </f:then>
+                                                    <f:else>
+                                                        <span class="label label-default">0</span>
+                                                    </f:else>
+                                                </f:if>
+                                            </dd>
+                                        </dl>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="btn-toolbar" role="toolbar" style="margin-top: 4px;">
+                                            <div class="btn-group" role="group">
+                                                <f:link.action
+                                                    action="connect"
+                                                    arguments="{client: client.uid}"
+                                                    class="btn btn-primary">
+                                                    <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.connect"/>
+                                                </f:link.action>
+                                            </div>
+                                        </div>
+
+
+                                    </div>
+                                </div>
+
+                                <hr/>
+
+                                <h3 style="margin-top: 0;">
+                                    <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:connections"/>
+                                </h3>
+
+                                <f:if condition="{client.connections -> f:count()}">
+                                    <f:then>
+                                        <div class="table-fit">
+                                            <table class="table table-striped table-hover">
+                                                <thead>
+                                                <tr>
+                                                    <th>
+                                                        <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:connection.label"/>
+                                                    </th>
+                                                    <th>
+                                                        <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:connection.status"/>
+                                                    </th>
+                                                    <th>
+                                                        <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:connection.expiresAt"/>
+                                                    </th>
+                                                    <th>
+                                                        <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:connection.lifetime"/>
+                                                    </th>
+                                                    <th>
+                                                        <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:connection.lastRefreshAt"/>
+                                                    </th>
+                                                    <th>
+                                                        <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:connection.lastCheckAt"/>
+                                                    </th>
+                                                    <th>
+                                                        <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:connection.lastError"/>
+                                                    </th>
+                                                    <th style="width: 1%; white-space: nowrap;"></th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <f:for each="{client.connections}" as="conn">
+                                                    <tr>
+                                                        <td>
+                                                            <strong>{conn.label}</strong>
+                                                            <f:if condition="{conn.remote_subject}">
+                                                                <div style="opacity:.75; font-size: 12px;">
+                                                                    <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:connection.remoteSubject"/>
+                                                                    :
+                                                                    {conn.remote_subject}
+                                                                </div>
+                                                            </f:if>
+                                                        </td>
+
+                                                        <td>
+                                                            <f:switch expression="{conn.status}">
+                                                                <f:case value="connected">
+                                                                    <span class="label label-success">
+                                                                        <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:status.connected"/>
+                                                                    </span>
+                                                                </f:case>
+                                                                <f:case value="expired">
+                                                                    <span class="label label-warning">
+                                                                        <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:status.expired"/>
+                                                                    </span>
+                                                                </f:case>
+                                                                <f:case value="error">
+                                                                    <span class="label label-danger">
+                                                                        <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:status.error"/>
+                                                                    </span>
+                                                                </f:case>
+                                                                <f:defaultCase>
+                                                                    <span class="label label-default">
+                                                                        <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:status.disconnected"/>
+                                                                    </span>
+                                                                </f:defaultCase>
+                                                            </f:switch>
+                                                        </td>
+
+                                                        <td>
+                                                            <f:if condition="{conn.accessTokenExpiresAt} > 0">
+                                                                <f:then>
+                                                                    {conn.accessTokenExpiresAt -> f:format.date(format: 'Y-m-d H:i')}
+                                                                </f:then>
+                                                                <f:else>-</f:else>
+                                                            </f:if>
+                                                        </td>
+
+                                                        <td>
+                                                            <f:if condition="{conn.accessTokenExpiresAt} > 0">
+                                                                <f:then>
+                                                                    <f:variable name="expiresAt" value="{conn.accessTokenExpiresAt -> f:format.date(format:'U')}"/>
+                                                                    <f:variable name="lifetimeSeconds" value="{expiresAt - now}"/>
+                                                                    <f:if condition="{lifetimeSeconds} > 0">
+                                                                        <f:then>
+                                                                            <span title="{lifetimeSeconds} seconds">
+                                                                                <f:format.number decimals="0" thousandsSeparator=".">{lifetimeSeconds}</f:format.number>s
+                                                                            </span>
+                                                                        </f:then>
+                                                                        <f:else>
+                                                                            <span class="text-danger">0s</span>
+                                                                        </f:else>
+                                                                    </f:if>
+                                                                </f:then>
+                                                                <f:else>-</f:else>
+                                                            </f:if>
+                                                        </td>
+
+                                                        <td>
+                                                            <f:if condition="{conn.lastRefreshAt} > 0">
+                                                                <f:then>
+                                                                    {conn.lastRefreshAt -> f:format.date(format: 'Y-m-d H:i')}
+                                                                </f:then>
+                                                                <f:else>-</f:else>
+                                                            </f:if>
+                                                        </td>
+
+                                                        <td>
+                                                            <f:if condition="{conn.lastCheckAt} > 0">
+                                                                <f:then>
+                                                                    {conn.lastCheckAt -> f:format.date(format: 'Y-m-d H:i')}
+                                                                </f:then>
+                                                                <f:else>-</f:else>
+                                                            </f:if>
+                                                        </td>
+
+                                                        <td>
+                                                            <f:if condition="{conn.lastErrorCode} || {conn.lastErrorMessage}">
+                                                                <f:then>
+                                                                    <div style="max-width: 420px;">
+                                                                        <strong>{conn.lastErrorCode}</strong>
+                                                                        <f:if condition="{conn.lastErrorMessage}">
+                                                                            <div style="opacity:.8; font-size: 12px; white-space: normal;">
+                                                                                {conn.lastErrorMessage}
+                                                                            </div>
+                                                                        </f:if>
+                                                                    </div>
+                                                                </f:then>
+                                                                <f:else>-</f:else>
+                                                            </f:if>
+                                                        </td>
+
+                                                        <td style="white-space: nowrap;">
+                                                            <div class="btn-group" role="group">
+                                                                <f:link.action
+                                                                    action="reconnect"
+                                                                    arguments="{client: client.uid, connection: conn.uid}"
+                                                                    class="btn btn-default btn-sm">
+                                                                    <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.reconnect"/>
+                                                                </f:link.action>
+
+                                                                <f:link.action
+                                                                    action="disconnect"
+                                                                    arguments="{connection: conn.uid}"
+                                                                    class="btn btn-danger btn-sm"
+                                                                    additionalAttributes="{onclick: 'return confirm(&quot;Disconnect this connection?&quot;);'}">
+                                                                    <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.disconnect"/>
+                                                                </f:link.action>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </f:for>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </f:then>
+                                    <f:else>
+                                        <p class="text-muted">
+                                            <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:msg.noConnections"/>
+                                        </p>
+                                    </f:else>
+                                </f:if>
+                            </div>
+                        </div>
+
+
+                </f:for>
+            </f:then>
+            <f:else>
+                <p class="text-muted">
+                    <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:msg.noClients"/>
+                </p>
+            </f:else>
+        </f:if>
+    </div>
+</f:section>
+
+</html>

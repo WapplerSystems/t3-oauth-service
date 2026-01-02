@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace WapplerSystems\OauthService\Service;
 
+use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 use WapplerSystems\OauthService\Crypto\CryptoService;
-use WapplerSystems\OauthService\Provider\ProviderResolver;
+use WapplerSystems\OauthService\Domain\Model\Client;
+use WapplerSystems\OauthService\Domain\Model\Connection;
+use WapplerSystems\OauthService\Provider\ProviderRegistry;
+use WapplerSystems\OauthService\Provider\Type\ProviderTypeResolver;
 use WapplerSystems\OauthService\Domain\Repository\ClientRepository;
 use WapplerSystems\OauthService\Domain\Repository\ConnectionRepository;
 use TYPO3\CMS\Backend\Routing\UriBuilder as BackendUriBuilder;
@@ -16,40 +21,41 @@ final class OAuthFlowService
         private readonly ClientRepository     $clientRepository,
         private readonly ConnectionRepository $connectionRepository,
         private readonly CryptoService        $cryptoService,
-        private readonly ProviderResolver     $providerResolver,
+        private readonly ProviderTypeResolver $providerTypeResolver,
         private readonly BackendUriBuilder    $backendUriBuilder,
+        protected PersistenceManager          $persistenceManager,
+        protected ProviderRegistry            $providerRegistry,
     )
     {
     }
 
-    public function buildRedirectUri(): string
-    {
-        return (string)$this->backendUriBuilder->buildUriFromRoute('oauthsvc_callback');
-    }
 
     /**
      * Startet den OAuth-Flow. Gibt die Provider-Auth-URL zurück (Controller macht Redirect).
      */
-    public function startAuthorization(int $clientUid, ?int $connectionUid = null, ?string $label = null): string
+    public function startAuthorization(int $clientUid, ServerRequestInterface $request, ?int $connectionUid = null, ?string $label = null): string
     {
+        /** @var ?Client $client */
         $client = $this->clientRepository->findByUid($clientUid);
-        if (!$client || (int)$client['is_active'] !== 1) {
+
+        if ($client === null || !$client->getIsActive()) {
             throw new \RuntimeException('Client not found or inactive.');
         }
 
-        $redirectUri = $this->buildRedirectUri();
 
-        // Connection anlegen oder laden
         if ($connectionUid === null) {
-            $connectionUid = $this->connectionRepository->insert([
-                'pid' => (int)$client['pid'],
-                'client_uid' => $clientUid,
-                'label' => $label ?: ('Connection ' . date('Y-m-d H:i')),
-                'status' => 'disconnected',
-            ]);
+            $connection = new Connection();
+            $connection->setPid($client->getPid());
+            $connection->setClient($client);
+            $connection->setLabel($label ?: ('Connection ' . date('Y-m-d H:i')));
+            $connection->setStatus(Connection::DISCONNECTED);
+
+            $this->connectionRepository->add($connection);
+
         } else {
+            /** @var Connection $conn */
             $conn = $this->connectionRepository->findByUid($connectionUid);
-            if (!$conn || (int)$conn['client_uid'] !== $clientUid) {
+            if (!$conn || (int)$conn->getClient()->getUid() !== $client->getUid()) {
                 throw new \RuntimeException('Connection not found for client.');
             }
         }
@@ -58,73 +64,81 @@ final class OAuthFlowService
         $state = bin2hex(random_bytes(24));
         $stateHash = hash('sha256', $state);
 
-        $this->connectionRepository->update($connectionUid, [
-            'state_hash' => $stateHash,
-            'state_created_at' => time(),
-            'last_error_code' => '',
-            'last_error_message' => '',
-        ]);
+        $connection->setStateHash($stateHash);
+        $connection->setStateCreatedAt(time());
 
-        $scopes = $this->normalizeScopes($client['scopes'] ?? '');
-        $provider = $this->providerResolver->resolve((string)$client['provider_type']);
+        $this->persistenceManager->persistAll();
 
-        return $provider->buildAuthorizationUrl($client, $redirectUri, $state, $scopes);
+
+        return $this->buildAuthorizationUrl($client, $request, $state);
     }
 
-    public function handleCallback(string $code, string $state): int
+    public function handleCallback(ServerRequestInterface $request, string $code, string $state): Connection
     {
         $stateHash = hash('sha256', $state);
-        $conn = $this->connectionRepository->findByStateHash($stateHash);
+        /** @var Connection $conn */
+        $conn = $this->connectionRepository->findOneByStateHash($stateHash);
         if (!$conn) {
             throw new \RuntimeException('Unknown state (no matching connection).');
         }
 
         // optional: state timeout (z.B. 10 Minuten)
-        $createdAt = (int)($conn['state_created_at'] ?? 0);
+        $createdAt = $conn->getStateCreatedAt() ?? 0;
         if ($createdAt > 0 && (time() - $createdAt) > 600) {
-            $this->connectionRepository->update((int)$conn['uid'], [
-                'status' => 'error',
-                'last_error_code' => 'state_expired',
-                'last_error_message' => 'State expired.',
-            ]);
-            throw new \RuntimeException('State expired.');
+            $conn->setStatus(Connection::ERROR);
+            $conn->setLastErrorCode('state_expired');
+            $conn->setLastErrorMessage('State expired.');
+            $this->connectionRepository->update($conn);
+            $this->persistenceManager->persistAll();
+            //throw new \RuntimeException('State expired.');
         }
 
-        $client = $this->clientRepository->findByUid((int)$conn['client_uid']);
-        if (!$client || (int)$client['is_active'] !== 1) {
+        $client = $conn->getClient();
+        if (!$client || !$client->getIsActive()) {
             throw new \RuntimeException('Client not found or inactive.');
         }
 
-        $provider = $this->providerResolver->resolve((string)$client['provider_type']);
-        $redirectUri = $this->buildRedirectUri();
+        $provider = $this->providerRegistry->get($client->getProvider());
+        $providerType = $this->providerTypeResolver->resolve($provider->type);
 
-        $clientSecretPlain = $this->cryptoService->decrypt($client['client_secret_enc'] ?? null) ?? '';
-        $clientRowForProvider = $client;
-        $clientRowForProvider['client_secret_plain'] = $clientSecretPlain;
+        $redirectUri = $this->backendUriBuilder->buildUriFromRoute('oauthsvc_callback', [
+            'state' => $state,
+        ])->withHost($request->getUri()->getHost())->withScheme($request->getUri()->getScheme())->__toString();
 
-        $token = $provider->exchangeCodeForToken($clientRowForProvider, $code, $redirectUri);
+        //$clientSecretDecrypted = $this->cryptoService->decrypt($client->getClientSecret()) ?? '';
+
+        try {
+            $token = $providerType->exchangeCodeForToken($provider, $client, $client->getClientSecret(), $code, $redirectUri);
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            $conn->setStatus(Connection::ERROR);
+            $conn->setLastErrorCode((string)$e->getCode());
+            $conn->setLastErrorMessage($e->getMessage());
+            $this->connectionRepository->update($conn);
+            $this->persistenceManager->persistAll();
+            throw new \RuntimeException('Error exchanging code for token: ' . $e->getMessage(), (int)$e->getCode(), $e);
+        }
 
         $expiresAt = 0;
         if (!empty($token['expires_in']) && is_numeric($token['expires_in'])) {
             $expiresAt = time() + (int)$token['expires_in'];
         }
 
-        $this->connectionRepository->update((int)$conn['uid'], [
-            'status' => 'connected',
-            'access_token_enc' => $this->cryptoService->encrypt((string)$token['access_token']),
-            'refresh_token_enc' => $this->cryptoService->encrypt((string)($token['refresh_token'] ?? '')),
-            'token_type' => (string)($token['token_type'] ?? ''),
-            'expires_at' => $expiresAt,
-            'last_refresh_at' => time(),
-            'last_check_at' => time(),
-            'last_error_code' => '',
-            'last_error_message' => '',
-            // state löschen
-            'state_hash' => '',
-            'state_created_at' => 0,
-        ]);
+        $conn->setStatus(Connection::CONNECTED);
+        $conn->setAccessToken($token['access_token']);
+        $conn->setRefreshToken($token['refresh_token'] ?? '');
+        $conn->setTokenType((string)($token['token_type'] ?? ''));
+        $conn->setAccessTokenExpiresAt(\DateTimeImmutable::createFromTimestamp($expiresAt));
+        $conn->setLastRefreshAt(new \DateTimeImmutable('now'));
+        $conn->setLastCheckAt(new \DateTimeImmutable('now'));
+        $conn->setLastErrorCode('');
+        $conn->setLastErrorMessage('');
+        // delete state
+        $conn->setStateHash('');
+        $conn->setStateCreatedAt(0);
+        $this->connectionRepository->update($conn);
+        $this->persistenceManager->persistAll();
 
-        return (int)$conn['uid'];
+        return $conn;
     }
 
     private function normalizeScopes(string $scopesField): array
@@ -144,4 +158,21 @@ final class OAuthFlowService
         $parts = preg_split('/\s+/', $scopesField) ?: [];
         return array_values(array_filter($parts));
     }
+
+
+    private function buildAuthorizationUrl(Client $client, ServerRequestInterface $request, string $state): string
+    {
+        $provider = $this->providerRegistry->get($client->getProvider());
+
+        $providerType = $this->providerTypeResolver->resolve($provider->type);
+
+        $redirectUri = $this->backendUriBuilder->buildUriFromRoute('oauthsvc_callback', [
+            'state' => $state,
+        ])->withHost($request->getUri()->getHost())->withScheme($request->getUri()->getScheme())->__toString();
+
+        return $providerType->buildAuthorizationUrl(client: $client, providerAuthorizationUrl: $provider->authorizationUrl, redirectUri: $redirectUri, state: $state);
+
+    }
+
+
 }

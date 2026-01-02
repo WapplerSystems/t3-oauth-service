@@ -1,7 +1,7 @@
 <?php
 
 $EM_CONF[$_EXTKEY] = [
-    'title' => 'Oauth Service for TYPO3',
+    'title' => 'OAuth Services for TYPO3',
     'description' => '',
     'category' => 'plugin',
     'author' => 'Sven Wappler',

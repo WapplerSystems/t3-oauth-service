@@ -7,17 +7,11 @@ use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 
 final class CryptoService
 {
-    private const NONCE_BYTES = SODIUM_CRYPTO_SECRETBOX_NONCEBYTES;
-    private const KEY_BYTES   = SODIUM_CRYPTO_SECRETBOX_KEYBYTES;
 
     public function __construct(
         private readonly ExtensionConfiguration $extensionConfiguration
     ) {}
 
-    /**
-     * Key-Quelle: Extension-Config "cryptoKey" (base64) ODER TYPO3 encryptionKey abgeleitet.
-     * Empfehlung: Setze in LocalConfiguration.php / AdditionalConfiguration.php eine feste base64 key config.
-     */
     private function getKey(): string
     {
         $extConf = $this->extensionConfiguration->get('oauth_service') ?? [];

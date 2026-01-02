@@ -1,6 +1,6 @@
 <?php
 return [
-    'tools_oauthservice' => [
+    'oauthservice' => [
         'parent' => 'tools',
         'position' => ['after' => 'tools_ExtensionmanagerExtensionmanager'],
         'access' => 'admin',
@@ -11,7 +11,7 @@ return [
         'extensionName' => 'OauthService',
         'controllerActions' => [
             \WapplerSystems\OauthService\Backend\Controller\OAuthModuleController::class => [
-                'index', 'connect', 'reconnect', 'disconnect'
+                'index', 'wizard', 'connect', 'reconnect', 'disconnect', 'deleteClient'
             ],
         ],
     ],

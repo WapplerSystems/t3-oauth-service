@@ -54,10 +54,10 @@
                                             <dd>
                                                 <f:if condition="{client.isActive}">
                                                     <f:then>
-                                                        <span class="label label-success">1</span>
+                                                        <span class="label label-success">Yes</span>
                                                     </f:then>
                                                     <f:else>
-                                                        <span class="label label-default">0</span>
+                                                        <span class="label label-default">No</span>
                                                     </f:else>
                                                 </f:if>
                                             </dd>
@@ -123,9 +123,7 @@
                                                             <strong>{conn.label}</strong>
                                                             <f:if condition="{conn.remote_subject}">
                                                                 <div style="opacity:.75; font-size: 12px;">
-                                                                    <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:connection.remoteSubject"/>
-                                                                    :
-                                                                    {conn.remote_subject}
+                                                                    {f:translate(key: 'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:connection.remoteSubject')}: {conn.remote_subject}
                                                                 </div>
                                                             </f:if>
                                                         </td>

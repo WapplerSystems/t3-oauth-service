@@ -1,0 +1,14 @@
+# cat=Token Monitoring/enable; type=int+; label=Refresh threshold seconds (Token-Erneuerung starten wenn Token in weniger als X Sekunden abläuft)
+thresholdSeconds = 300
+
+# cat=Token Monitoring/enable; type=int+; label=Debounce minutes (Mindestabstand in Minuten zwischen Fehler-Benachrichtigungen je Verbindung)
+debounceMinutes = 360
+
+# cat=Expiry Warnings/enable; type=string; label=Warning email (Kommagetrennte E-Mail-Adressen für Ablauf-Warnungen)
+warningEmail =
+
+# cat=Expiry Warnings/enable; type=string; label=Warning thresholds in days (Kommagetrennte Tage vor Ablauf für Warnungen, z.B. 7,3,1)
+warningThresholdDays = 7,3,1
+
+# cat=Expiry Warnings/enable; type=int+; label=Debounce hours (Mindestabstand in Stunden zwischen Warn-Mails je Verbindung)
+debounceHours = 20

@@ -136,7 +136,6 @@ class OAuthModuleController extends ActionController
 
     protected function registerDocHeaderButtons(ModuleTemplate $view, string $requestUri): void
     {
-        $languageService = $this->getLanguageService();
         $buttonBar = $view->getDocHeaderComponent()->getButtonBar();
 
 
@@ -206,11 +205,6 @@ class OAuthModuleController extends ActionController
             }
         }
         return $this->redirect('index');
-    }
-
-    protected function getLanguageService(): LanguageService
-    {
-        return $GLOBALS['LANG'];
     }
 
 

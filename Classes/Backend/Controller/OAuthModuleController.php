@@ -176,10 +176,17 @@ class OAuthModuleController extends ActionController
 
     public function reconnectAction(): ResponseInterface
     {
-        $clientUid = (int)($this->request->getArgument('client') ?? 0);
+        $moduleTemplate = $this->moduleTemplateFactory->create($this->request);
+
         $connectionUid = (int)($this->request->getArgument('connection') ?? 0);
+        $connection = $this->connectionRepository->findByUid($connectionUid);
+        $clientUid = $connection->getClient()->getUid();
         $authUrl = $this->oAuthFlowService->startAuthorization($clientUid, $this->request, $connectionUid, null);
-        return $this->redirectToUri($authUrl);
+
+        $moduleTemplate->assignMultiple([
+            'authorizeUrl' => $authUrl,
+        ]);
+        return $moduleTemplate->renderResponse('Backend/Connect');
     }
 
     public function disconnectAction(): ResponseInterface

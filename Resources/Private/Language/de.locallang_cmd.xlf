@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.0">
+	<file source-language="en" target-language="de" datatype="plaintext" original="messages" date="2025-12-26T00:00:00Z">
+		<header/>
+		<body>
+
+			<!-- ConnectionMonitorCommand -->
+			<trans-unit id="monitor.description">
+				<source>Checks OAuth connections for expiring tokens and sends warning emails.</source>
+				<target>Prüft OAuth-Verbindungen auf ablaufende Tokens und versendet Warn-Emails.</target>
+			</trans-unit>
+
+			<trans-unit id="monitor.warning.noEmail">
+				<source>No warningEmail configured in extension settings. Aborting.</source>
+				<target>Keine warningEmail in den Extension-Einstellungen konfiguriert. Abbruch.</target>
+			</trans-unit>
+
+			<trans-unit id="monitor.warning.noThresholds">
+				<source>No valid warningThresholdDays configured.</source>
+				<target>Keine gültigen warningThresholdDays konfiguriert.</target>
+			</trans-unit>
+
+			<trans-unit id="monitor.success.noExpiring">
+				<source>No expiring connections found.</source>
+				<target>Keine ablaufenden Verbindungen gefunden.</target>
+			</trans-unit>
+
+			<trans-unit id="monitor.note.debounced">
+				<source>Connection #%d (%s): Warning recently sent, skipped.</source>
+				<target>Verbindung #%d (%s): Warnung kürzlich gesendet, übersprungen.</target>
+			</trans-unit>
+
+			<trans-unit id="monitor.urgency.critical">
+				<source>URGENT</source>
+				<target>DRINGEND</target>
+			</trans-unit>
+
+			<trans-unit id="monitor.urgency.warning">
+				<source>Warning</source>
+				<target>Warnung</target>
+			</trans-unit>
+
+			<trans-unit id="monitor.email.subject">
+				<source>[OAuth] %s: Token expires in %d day(s) – %s</source>
+				<target>[OAuth] %s: Token läuft in %d Tag(en) ab – %s</target>
+			</trans-unit>
+
+			<trans-unit id="monitor.email.intro">
+				<source>An OAuth connection is about to expire.</source>
+				<target>Eine OAuth-Verbindung läuft demnächst ab.</target>
+			</trans-unit>
+
+			<trans-unit id="monitor.email.label.connection">
+				<source>Connection:   </source>
+				<target>Verbindung:   </target>
+			</trans-unit>
+
+			<trans-unit id="monitor.email.label.status">
+				<source>Status:       </source>
+				<target>Status:       </target>
+			</trans-unit>
+
+			<trans-unit id="monitor.email.label.expiresAt">
+				<source>Expires at:   </source>
+				<target>Läuft ab am:  </target>
+			</trans-unit>
+
+			<trans-unit id="monitor.email.remaining">
+				<source>Remaining:    %d day(s) (%d seconds)</source>
+				<target>Verbleibend:  %d Tag(e) (%d Sekunden)</target>
+			</trans-unit>
+
+			<trans-unit id="monitor.email.hint">
+				<source>Please renew the connection in the TYPO3 backend under</source>
+				<target>Bitte erneuern Sie die Verbindung im TYPO3-Backend unter</target>
+			</trans-unit>
+
+			<trans-unit id="monitor.email.path">
+				<source>System &gt; OAuth Connections.</source>
+				<target>System &gt; OAuth-Verbindungen.</target>
+			</trans-unit>
+
+			<trans-unit id="monitor.output.warningSent">
+				<source>  → Warning sent to %s: Connection "%s" expires in %d day(s).</source>
+				<target>  → Warnung gesendet an %s: Verbindung "%s" läuft in %d Tag(en) ab.</target>
+			</trans-unit>
+
+			<trans-unit id="monitor.success.summary">
+				<source>%d warning email(s) sent.</source>
+				<target>%d Warn-Email(s) versendet.</target>
+			</trans-unit>
+
+			<!-- TokenRefreshCommand -->
+			<trans-unit id="refresh.description">
+				<source>Refreshes expiring or expired OAuth access tokens via the refresh token flow.</source>
+				<target>Erneuert ablaufende oder abgelaufene OAuth Access-Tokens über den Refresh-Token-Flow.</target>
+			</trans-unit>
+
+			<trans-unit id="refresh.option.threshold">
+				<source>Refresh tokens expiring in less than X seconds (0 = only already expired).</source>
+				<target>Tokens refreshen die in weniger als X Sekunden ablaufen (0 = nur bereits abgelaufene).</target>
+			</trans-unit>
+
+			<trans-unit id="refresh.option.uid">
+				<source>Only refresh a specific connection (UID).</source>
+				<target>Nur eine bestimmte Verbindung refreshen (UID).</target>
+			</trans-unit>
+
+			<trans-unit id="refresh.option.force">
+				<source>Refresh all connections regardless of expiry time.</source>
+				<target>Alle Verbindungen refreshen, unabhängig vom Ablaufzeitpunkt.</target>
+			</trans-unit>
+
+			<trans-unit id="refresh.success.noConnections">
+				<source>No connections found that need a refresh.</source>
+				<target>Keine Verbindungen gefunden, die einen Refresh benötigen.</target>
+			</trans-unit>
+
+			<trans-unit id="refresh.info.checking">
+				<source>%d connection(s) being checked …</source>
+				<target>%d Verbindung(en) werden geprüft …</target>
+			</trans-unit>
+
+			<trans-unit id="refresh.skip.clientInactive">
+				<source>→ "%s": Client not found or inactive, skipped.</source>
+				<target>→ "%s": Client nicht gefunden oder inaktiv, übersprungen.</target>
+			</trans-unit>
+
+			<trans-unit id="refresh.skip.noRefreshToken">
+				<source>→ "%s": No refresh token available, skipped.</source>
+				<target>→ "%s": Kein Refresh-Token vorhanden, übersprungen.</target>
+			</trans-unit>
+
+			<trans-unit id="refresh.skip.noRefreshSupport">
+				<source>→ "%s": Provider does not support refresh, skipped.</source>
+				<target>→ "%s": Provider unterstützt kein Refresh, übersprungen.</target>
+			</trans-unit>
+
+			<trans-unit id="refresh.success.renewed">
+				<source>✓ "%s": Token successfully renewed (expires: %s).</source>
+				<target>✓ "%s": Token erfolgreich erneuert (läuft ab: %s).</target>
+			</trans-unit>
+
+			<trans-unit id="refresh.error.failed">
+				<source>✗ "%s": Refresh failed – %s</source>
+				<target>✗ "%s": Refresh fehlgeschlagen – %s</target>
+			</trans-unit>
+
+			<trans-unit id="refresh.success.summary">
+				<source>%d renewed, %d failed.</source>
+				<target>%d erneuert, %d fehlgeschlagen.</target>
+			</trans-unit>
+
+			<trans-unit id="refresh.email.subject">
+				<source>[OAuth] Token refresh failed: %s</source>
+				<target>[OAuth] Token-Refresh fehlgeschlagen: %s</target>
+			</trans-unit>
+
+			<trans-unit id="refresh.email.intro">
+				<source>An error occurred during automatic token refresh.</source>
+				<target>Beim automatischen Token-Refresh ist ein Fehler aufgetreten.</target>
+			</trans-unit>
+
+			<trans-unit id="refresh.email.label.client">
+				<source>Client:      </source>
+				<target>Client:      </target>
+			</trans-unit>
+
+			<trans-unit id="refresh.email.label.connection">
+				<source>Connection:  </source>
+				<target>Verbindung:  </target>
+			</trans-unit>
+
+			<trans-unit id="refresh.email.label.uid">
+				<source>UID:         </source>
+				<target>UID:         </target>
+			</trans-unit>
+
+			<trans-unit id="refresh.email.label.error">
+				<source>Error:       </source>
+				<target>Fehler:      </target>
+			</trans-unit>
+
+			<trans-unit id="refresh.email.label.time">
+				<source>Time:        </source>
+				<target>Zeit:        </target>
+			</trans-unit>
+
+		</body>
+	</file>
+</xliff>

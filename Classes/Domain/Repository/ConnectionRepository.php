@@ -5,14 +5,17 @@ namespace WapplerSystems\OauthService\Domain\Repository;
 
 use Doctrine\DBAL\ParameterType;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Extbase\Persistence\Repository;
 
-final class ConnectionRepository
+final class ConnectionRepository extends Repository
 {
     private const string TABLE = 'tx_oauthsvc_connection';
 
-    public function __construct(
-        private readonly ConnectionPool $connectionPool,
-    ) {
+    private ConnectionPool $connectionPool;
+
+    public function injectConnectionPool(ConnectionPool $connectionPool): void
+    {
+        $this->connectionPool = $connectionPool;
     }
 
     public function findAllForMonitoring(): array
@@ -74,7 +77,7 @@ final class ConnectionRepository
             ->fetchAllAssociative();
     }
 
-    public function update(int $uid, array $data): void
+    public function updateFields(int $uid, array $data): void
     {
         $this->connectionPool
             ->getConnectionForTable(self::TABLE)

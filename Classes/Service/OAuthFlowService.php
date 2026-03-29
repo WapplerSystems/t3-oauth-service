@@ -42,6 +42,8 @@ final class OAuthFlowService
             throw new \RuntimeException('Client not found or inactive.');
         }
 
+        $state = bin2hex(random_bytes(24));
+        $stateHash = hash('sha256', $state);
 
         if ($connectionUid === null) {
             $connection = new Connection();
@@ -49,26 +51,23 @@ final class OAuthFlowService
             $connection->setClient($client);
             $connection->setLabel($label ?: ('Connection ' . date('Y-m-d H:i')));
             $connection->setStatus(Connection::DISCONNECTED);
+            $connection->setStateHash($stateHash);
+            $connection->setStateCreatedAt(time());
 
             $this->connectionRepository->add($connection);
 
         } else {
             /** @var Connection $conn */
-            $conn = $this->connectionRepository->findByUid($connectionUid);
-            if (!$conn || (int)$conn->getClient()->getUid() !== $client->getUid()) {
+            $connection = $this->connectionRepository->findByUid($connectionUid);
+            if (!$connection || (int)$connection->getClient()->getUid() !== $client->getUid()) {
                 throw new \RuntimeException('Connection not found for client.');
             }
+            $connection->setStateHash($stateHash);
+            $connection->setStateCreatedAt(time());
+            $this->connectionRepository->update($connection);
         }
 
-        // state erstellen: raw speichern wir nicht, nur hash.
-        $state = bin2hex(random_bytes(24));
-        $stateHash = hash('sha256', $state);
-
-        $connection->setStateHash($stateHash);
-        $connection->setStateCreatedAt(time());
-
         $this->persistenceManager->persistAll();
-
 
         return $this->buildAuthorizationUrl($client, $request, $state);
     }
@@ -105,10 +104,10 @@ final class OAuthFlowService
             'state' => $state,
         ])->withHost($request->getUri()->getHost())->withScheme($request->getUri()->getScheme())->__toString();
 
-        //$clientSecretDecrypted = $this->cryptoService->decrypt($client->getClientSecret()) ?? '';
+        $clientSecretPlain = $this->cryptoService->decrypt($client->getClientSecret()) ?? $client->getClientSecret() ?? '';
 
         try {
-            $token = $providerType->exchangeCodeForToken($provider, $client, $client->getClientSecret(), $code, $redirectUri);
+            $token = $providerType->exchangeCodeForToken($provider, $client, $clientSecretPlain, $code, $redirectUri);
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             $conn->setStatus(Connection::ERROR);
             $conn->setLastErrorCode((string)$e->getCode());
@@ -124,8 +123,8 @@ final class OAuthFlowService
         }
 
         $conn->setStatus(Connection::CONNECTED);
-        $conn->setAccessToken($token['access_token']);
-        $conn->setRefreshToken($token['refresh_token'] ?? '');
+        $conn->setAccessToken($this->cryptoService->encrypt((string)$token['access_token']));
+        $conn->setRefreshToken($this->cryptoService->encrypt((string)($token['refresh_token'] ?? '')));
         $conn->setTokenType((string)($token['token_type'] ?? ''));
         $conn->setAccessTokenExpiresAt(\DateTimeImmutable::createFromTimestamp($expiresAt));
         $conn->setLastRefreshAt(new \DateTimeImmutable('now'));

@@ -1,188 +1,232 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xliff version="1.0">
-	<file source-language="en" datatype="plaintext" original="messages" date="2025-12-26T00:00:00Z">
+	<file source-language="en" target-language="de" datatype="plaintext" original="messages" date="2025-12-26T00:00:00Z">
 		<header/>
 		<body>
 
 			<!-- Module labels -->
 			<trans-unit id="mlang_tabs_tab">
 				<source>OAuth Services</source>
+				<target>OAuth-Dienste</target>
 			</trans-unit>
 
 			<trans-unit id="mlang_labels_tablabel">
 				<source>OAuth Services</source>
+				<target>OAuth-Dienste</target>
 			</trans-unit>
 
 			<trans-unit id="mlang_labels_tabdescr">
 				<source>Manage OAuth clients, connections and monitoring.</source>
+				<target>OAuth-Clients, Verbindungen und Monitoring verwalten.</target>
 			</trans-unit>
 
 			<!-- Generic UI strings -->
 			<trans-unit id="label.yes">
 				<source>Yes</source>
+				<target>Ja</target>
 			</trans-unit>
 
 			<trans-unit id="label.no">
 				<source>No</source>
+				<target>Nein</target>
 			</trans-unit>
 
 			<trans-unit id="title">
 				<source>OAuth Services</source>
+				<target>OAuth-Dienste</target>
 			</trans-unit>
 
 			<trans-unit id="clients">
 				<source>OAuth clients</source>
+				<target>OAuth-Clients</target>
 			</trans-unit>
 
 			<trans-unit id="connections">
 				<source>OAuth connections</source>
+				<target>OAuth-Verbindungen</target>
 			</trans-unit>
 
 			<trans-unit id="connection">
 				<source>OAuth connection</source>
+				<target>OAuth-Verbindung</target>
 			</trans-unit>
 
 			<trans-unit id="client.identifier">
 				<source>Identifier</source>
+				<target>Bezeichner</target>
 			</trans-unit>
 
 			<trans-unit id="client.title">
 				<source>Title</source>
+				<target>Titel</target>
 			</trans-unit>
 
 			<trans-unit id="client.provider">
 				<source>Provider</source>
+				<target>Anbieter</target>
 			</trans-unit>
 
 			<trans-unit id="client.isActive">
 				<source>Active</source>
+				<target>Aktiv</target>
 			</trans-unit>
 
 			<trans-unit id="client.notifyEmail">
 				<source>Notification email</source>
+				<target>Benachrichtigungs-E-Mail</target>
 			</trans-unit>
 
 			<trans-unit id="client.callbackRoute">
 				<source>Callback route</source>
+				<target>Callback-Route</target>
 			</trans-unit>
 
 			<trans-unit id="client.scopes">
 				<source>Scopes</source>
+				<target>Berechtigungen</target>
 			</trans-unit>
 
 			<trans-unit id="client.credentials">
 				<source>Credentials</source>
+				<target>Zugangsdaten</target>
 			</trans-unit>
 
 			<trans-unit id="client.credentials.set">
 				<source>Set</source>
+				<target>Gesetzt</target>
 			</trans-unit>
 
 			<trans-unit id="client.credentials.missing">
 				<source>Missing</source>
+				<target>Fehlt</target>
 			</trans-unit>
 
 			<trans-unit id="connection.label">
 				<source>Label</source>
+				<target>Bezeichnung</target>
 			</trans-unit>
 
 			<trans-unit id="connection.status">
 				<source>Status</source>
+				<target>Status</target>
 			</trans-unit>
 
 			<trans-unit id="connection.expiresAt">
 				<source>Expires</source>
+				<target>Läuft ab</target>
 			</trans-unit>
 
 			<trans-unit id="connection.lifetime">
 				<source>Lifetime</source>
+				<target>Laufzeit</target>
 			</trans-unit>
 
 			<trans-unit id="connection.lastRefreshAt">
 				<source>Last refresh</source>
+				<target>Letzter Refresh</target>
 			</trans-unit>
 
 			<trans-unit id="connection.lastCheckAt">
 				<source>Last check</source>
+				<target>Letzte Prüfung</target>
 			</trans-unit>
 
 			<trans-unit id="connection.lastError">
 				<source>Last error</source>
+				<target>Letzter Fehler</target>
 			</trans-unit>
 
 			<trans-unit id="connection.remoteSubject">
 				<source>Remote subject</source>
+				<target>Remote-Subject</target>
 			</trans-unit>
 
 			<!-- Status values -->
 			<trans-unit id="status.connected">
 				<source>Connected</source>
+				<target>Verbunden</target>
 			</trans-unit>
 
 			<trans-unit id="status.disconnected">
 				<source>Disconnected</source>
+				<target>Getrennt</target>
 			</trans-unit>
 
 			<trans-unit id="status.expired">
 				<source>Expired</source>
+				<target>Abgelaufen</target>
 			</trans-unit>
 
 			<trans-unit id="status.error">
 				<source>Error</source>
+				<target>Fehler</target>
 			</trans-unit>
 
 			<!-- Actions -->
 			<trans-unit id="action.connect">
 				<source>Connect</source>
+				<target>Verbinden</target>
 			</trans-unit>
 
 			<trans-unit id="action.reconnect">
 				<source>Reconnect</source>
+				<target>Neu verbinden</target>
 			</trans-unit>
 
 			<trans-unit id="action.disconnect">
 				<source>Disconnect</source>
+				<target>Trennen</target>
 			</trans-unit>
 
 			<trans-unit id="action.refreshTest">
 				<source>Test refresh</source>
+				<target>Refresh testen</target>
 			</trans-unit>
 
 			<trans-unit id="action.save">
 				<source>Save</source>
+				<target>Speichern</target>
 			</trans-unit>
 
 			<trans-unit id="action.cancel">
 				<source>Cancel</source>
+				<target>Abbrechen</target>
 			</trans-unit>
 
 			<trans-unit id="action.deleteClient">
 				<source>Delete client</source>
+				<target>Client löschen</target>
 			</trans-unit>
 
 			<!-- Messages -->
 			<trans-unit id="msg.confirmDisconnect">
 				<source>Disconnect this connection?</source>
+				<target>Diese Verbindung trennen?</target>
 			</trans-unit>
 
 			<trans-unit id="msg.noClients">
 				<source>No OAuth clients configured.</source>
+				<target>Keine OAuth-Clients konfiguriert.</target>
 			</trans-unit>
 
 			<trans-unit id="msg.noConnections">
 				<source>No connections available.</source>
+				<target>Keine Verbindungen vorhanden.</target>
 			</trans-unit>
 
 			<trans-unit id="msg.callback.success">
 				<source>OAuth connection established successfully.</source>
+				<target>OAuth-Verbindung erfolgreich hergestellt.</target>
 			</trans-unit>
 
 			<trans-unit id="msg.callback.failed">
 				<source>OAuth callback failed.</source>
+				<target>OAuth-Callback fehlgeschlagen.</target>
 			</trans-unit>
 
 			<trans-unit id="msg.missingParams">
 				<source>Missing required parameters.</source>
+				<target>Erforderliche Parameter fehlen.</target>
 			</trans-unit>
 
 		</body>

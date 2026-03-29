@@ -10,6 +10,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
+use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use WapplerSystems\OauthService\Domain\Repository\ConnectionRepository;
 use WapplerSystems\OauthService\Service\NotificationService;
 
@@ -27,6 +28,11 @@ final class ConnectionMonitorCommand extends Command
         parent::__construct();
     }
 
+    protected function configure(): void
+    {
+        $this->setDescription($this->translate('monitor.description'));
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
@@ -38,7 +44,7 @@ final class ConnectionMonitorCommand extends Command
         $debounceHours   = max(1, (int)($extConf['debounceHours'] ?? 20));
 
         if ($warningEmail === '') {
-            $io->warning('Keine warningEmail in den Extension-Einstellungen konfiguriert. Abbruch.');
+            $io->warning($this->translate('monitor.warning.noEmail'));
             return Command::SUCCESS;
         }
 
@@ -51,7 +57,7 @@ final class ConnectionMonitorCommand extends Command
         rsort($thresholdDays); // absteigend: 7, 3, 1
 
         if (empty($thresholdDays)) {
-            $io->warning('Keine gültigen warningThresholdDays konfiguriert.');
+            $io->warning($this->translate('monitor.warning.noThresholds'));
             return Command::SUCCESS;
         }
 
@@ -59,27 +65,27 @@ final class ConnectionMonitorCommand extends Command
         $connections = $this->connectionRepository->findExpiringWithinSeconds($maxThresholdSeconds);
 
         if (empty($connections)) {
-            $io->success('Keine ablaufenden Verbindungen gefunden.');
+            $io->success($this->translate('monitor.success.noExpiring'));
             return Command::SUCCESS;
         }
 
-        $now            = time();
+        $now             = time();
         $debounceSeconds = $debounceHours * 3600;
-        $sentCount      = 0;
+        $sentCount       = 0;
 
         foreach ($connections as $conn) {
             $expiresAt      = (int)($conn['access_token_expires_at'] ?? 0);
             $lastNotifiedAt = (int)($conn['last_notified_at'] ?? 0);
             $secondsLeft    = $expiresAt - $now;
 
+            // Token bereits abgelaufen: Status auf expired setzen
+            if ($secondsLeft <= 0) {
+                $this->connectionRepository->updateFields((int)$conn['uid'], ['status' => 'expired']);
+            }
 
             // Debounce: wurde in den letzten $debounceHours bereits eine Warnung gesendet?
             if ($lastNotifiedAt > 0 && ($now - $lastNotifiedAt) < $debounceSeconds) {
-                $io->note(sprintf(
-                    'Verbindung #%d (%s): Warnung kürzlich gesendet, übersprungen.',
-                    $conn['uid'],
-                    $conn['label'] ?? ''
-                ));
+                $io->note($this->translate('monitor.note.debounced', [$conn['uid'], $conn['label'] ?? '']));
                 continue;
             }
 
@@ -99,44 +105,49 @@ final class ConnectionMonitorCommand extends Command
             $daysLeft   = (int)ceil($secondsLeft / 86400);
             $expiresStr = date('d.m.Y H:i', $expiresAt);
             $label      = ($conn['label'] ?? '') ?: ('#' . $conn['uid']);
-            $urgency    = $daysLeft <= 1 ? 'DRINGEND' : 'Warnung';
+            $urgency    = $daysLeft <= 1
+                ? $this->translate('monitor.urgency.critical')
+                : $this->translate('monitor.urgency.warning');
 
-            $subject = sprintf(
-                '[OAuth] %s: Token läuft in %d Tag(en) ab – %s',
-                $urgency,
-                $daysLeft,
-                $label
-            );
+            $subject = $this->translate('monitor.email.subject', [$urgency, $daysLeft, $label]);
 
             $body = implode("\n", [
-                'Eine OAuth-Verbindung läuft demnächst ab.',
+                $this->translate('monitor.email.intro'),
                 '',
-                'Verbindung:   ' . $label,
-                'Status:       ' . ($conn['status'] ?? ''),
-                'Läuft ab am:  ' . $expiresStr,
-                'Verbleibend:  ' . $daysLeft . ' Tag(e) (' . $secondsLeft . ' Sekunden)',
+                $this->translate('monitor.email.label.connection') . $label,
+                $this->translate('monitor.email.label.status') . ($conn['status'] ?? ''),
+                $this->translate('monitor.email.label.expiresAt') . $expiresStr,
+                $this->translate('monitor.email.remaining', [$daysLeft, $secondsLeft]),
                 '',
-                'Bitte erneuern Sie die Verbindung im TYPO3-Backend unter',
-                'System > OAuth-Verbindungen.',
+                $this->translate('monitor.email.hint'),
+                $this->translate('monitor.email.path'),
             ]);
 
             foreach ($recipients as $recipient) {
                 $this->notificationService->sendFailureMail($recipient, $subject, $body);
             }
 
-            $this->connectionRepository->update((int)$conn['uid'], ['last_notified_at' => $now]);
+            $this->connectionRepository->updateFields((int)$conn['uid'], ['last_notified_at' => $now]);
 
-            $io->writeln(sprintf(
-                '  → Warnung gesendet an %s: Verbindung "%s" läuft in %d Tag(en) ab.',
+            $io->writeln($this->translate('monitor.output.warningSent', [
                 implode(', ', $recipients),
                 $label,
-                $daysLeft
-            ));
+                $daysLeft,
+            ]));
 
             $sentCount++;
         }
 
-        $io->success(sprintf('%d Warn-Email(s) versendet.', $sentCount));
+        $io->success($this->translate('monitor.success.summary', [$sentCount]));
         return Command::SUCCESS;
+    }
+
+    private function translate(string $key, array $arguments = []): string
+    {
+        return LocalizationUtility::translate(
+            'LLL:EXT:oauth_service/Resources/Private/Language/locallang_cmd.xlf:' . $key,
+            'OauthService',
+            $arguments !== [] ? $arguments : null,
+        ) ?? $key;
     }
 }

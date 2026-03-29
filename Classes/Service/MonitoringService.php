@@ -4,21 +4,24 @@ declare(strict_types=1);
 namespace WapplerSystems\OauthService\Service;
 
 use WapplerSystems\OauthService\Crypto\CryptoService;
-use WapplerSystems\OauthService\Provider\ProviderResolver;
+use WapplerSystems\OauthService\Domain\Model\Client;
 use WapplerSystems\OauthService\Domain\Repository\ClientRepository;
 use WapplerSystems\OauthService\Domain\Repository\ConnectionRepository;
+use WapplerSystems\OauthService\Provider\Type\ProviderTypeResolver;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 
 final class MonitoringService
 {
     public function __construct(
-        private readonly ConnectionRepository $connectionRepository,
-        private readonly ClientRepository $clientRepository,
-        private readonly ProviderResolver $providerResolver,
-        private readonly CryptoService $cryptoService,
-        private readonly NotificationService $notificationService,
+        private readonly ConnectionRepository   $connectionRepository,
+        private readonly ClientRepository       $clientRepository,
+        private readonly CryptoService          $cryptoService,
+        private readonly ProviderTypeResolver   $providerTypeResolver,
+        private readonly NotificationService    $notificationService,
         private readonly ExtensionConfiguration $extensionConfiguration,
-    ) {}
+    )
+    {
+    }
 
     public function run(): void
     {
@@ -37,19 +40,21 @@ final class MonitoringService
     private function checkOne(array $conn, int $now, int $threshold, int $debounceMinutes): void
     {
         $uid = (int)$conn['uid'];
-        $this->connectionRepository->update($uid, ['last_check_at' => $now]);
+        $this->connectionRepository->updateFields($uid, ['last_check_at' => $now]);
 
-        $client = $this->clientRepository->findByUid((int)$conn['client_uid']);
-        if (!$client || (int)$client['is_active'] !== 1) {
+        /** @var Client|null $client */
+        $client = $this->clientRepository->findByUid((int)$conn['client']);
+        if ($client === null || !$client->getIsActive()) {
             return;
         }
 
-        $expiresAt = (int)($conn['expires_at'] ?? 0);
+        $expiresAt = (int)($conn['access_token_expires_at'] ?? 0);
         $shouldRefresh = $expiresAt > 0 && $expiresAt <= ($now + $threshold);
 
-        // Falls bereits abgelaufen: auch refresh versuchen
+        // Falls bereits abgelaufen: Status auf expired setzen und refresh versuchen
         if ($expiresAt > 0 && $expiresAt <= $now) {
             $shouldRefresh = true;
+            $this->connectionRepository->updateFields($uid, ['status' => 'expired']);
         }
 
         if (!$shouldRefresh) {
@@ -57,35 +62,31 @@ final class MonitoringService
         }
 
         try {
-            $refreshToken = $this->cryptoService->decrypt($conn['refresh_token_enc'] ?? null) ?? '';
+            $refreshToken = $this->cryptoService->decrypt($conn['refresh_token'] ?? null) ?? '';
             if ($refreshToken === '') {
                 $this->markFailure($client, $conn, 'missing_refresh_token', 'No refresh token available.', $debounceMinutes);
                 return;
             }
 
-            $provider = $this->providerResolver->resolve((string)$client['provider_type']);
-            if (!$provider->supportsRefresh()) {
+            $providerType = $this->providerTypeResolver->resolve((string)$client->getProvider());
+            if (!$providerType->supportsRefresh()) {
                 $this->markFailure($client, $conn, 'refresh_not_supported', 'Provider does not support refresh.', $debounceMinutes);
                 return;
             }
 
-            $clientSecretPlain = $this->cryptoService->decrypt($client['client_secret_enc'] ?? null) ?? '';
-            $clientRowForProvider = $client;
-            $clientRowForProvider['client_secret_plain'] = $clientSecretPlain;
-
-            $token = $provider->refreshToken($clientRowForProvider, $refreshToken);
+            $token = $providerType->refreshToken($client, $refreshToken);
 
             $newExpiresAt = 0;
             if (!empty($token['expires_in']) && is_numeric($token['expires_in'])) {
                 $newExpiresAt = time() + (int)$token['expires_in'];
             }
 
-            $this->connectionRepository->update((int)$conn['uid'], [
+            $this->connectionRepository->updateFields((int)$conn['uid'], [
                 'status' => 'connected',
-                'access_token_enc' => $this->cryptoService->encrypt((string)$token['access_token']),
-                'refresh_token_enc' => $this->cryptoService->encrypt((string)($token['refresh_token'] ?? $refreshToken)),
+                'access_token' => $this->cryptoService->encrypt((string)$token['access_token']),
+                'refresh_token' => $this->cryptoService->encrypt((string)($token['refresh_token'] ?? $refreshToken)),
                 'token_type' => (string)($token['token_type'] ?? ''),
-                'expires_at' => $newExpiresAt,
+                'access_token_expires_at' => $newExpiresAt,
                 'last_refresh_at' => time(),
                 'last_error_code' => '',
                 'last_error_message' => '',
@@ -95,16 +96,16 @@ final class MonitoringService
         }
     }
 
-    private function markFailure(array $client, array $conn, string $code, string $message, int $debounceMinutes): void
+    private function markFailure(Client $client, array $conn, string $code, string $message, int $debounceMinutes): void
     {
         $uid = (int)$conn['uid'];
-        $this->connectionRepository->update($uid, [
+        $this->connectionRepository->updateFields($uid, [
             'status' => 'error',
             'last_error_code' => $code,
             'last_error_message' => $message,
         ]);
 
-        $to = (string)($client['notify_email'] ?? '');
+        $to = (string)($client->getNotifyEmail() ?? '');
         if (trim($to) === '') {
             return;
         }
@@ -118,8 +119,7 @@ final class MonitoringService
 
         $subject = '[TYPO3 OAuth] Connection failure: ' . ($conn['label'] ?: ('#' . $uid));
         $body = implode("\n", [
-            'Client: ' . (string)($client['title'] ?? ''),
-            'Identifier: ' . (string)($client['identifier'] ?? ''),
+            'Client: ' . ($client->getTitle() ?? ''),
             'Connection: ' . (string)($conn['label'] ?? ''),
             'UID: ' . $uid,
             'Error: ' . $code,
@@ -129,7 +129,7 @@ final class MonitoringService
 
         $this->notificationService->sendFailureMail($to, $subject, $body);
 
-        $this->connectionRepository->update($uid, [
+        $this->connectionRepository->updateFields($uid, [
             'last_notified_at' => time(),
         ]);
     }

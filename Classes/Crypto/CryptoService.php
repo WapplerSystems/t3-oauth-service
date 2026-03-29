@@ -3,34 +3,18 @@ declare(strict_types=1);
 
 namespace WapplerSystems\OauthService\Crypto;
 
-use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
-
 final class CryptoService
 {
-
-    public function __construct(
-        private readonly ExtensionConfiguration $extensionConfiguration
-    ) {}
+    private const NONCE_BYTES = SODIUM_CRYPTO_SECRETBOX_NONCEBYTES;
 
     private function getKey(): string
     {
-        $extConf = $this->extensionConfiguration->get('oauth_service') ?? [];
-        $keyB64 = (string)($extConf['cryptoKey'] ?? '');
-
-        if ($keyB64 !== '') {
-            $key = base64_decode($keyB64, true);
-            if (is_string($key) && strlen($key) === self::KEY_BYTES) {
-                return $key;
-            }
-        }
-
-        // Fallback: TYPO3 encryptionKey (nicht ideal, aber praktikabel)
         $encKey = (string)($GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey'] ?? '');
         if ($encKey === '') {
-            throw new \RuntimeException('Missing TYPO3 SYS/encryptionKey and oauth_service.cryptoKey.');
+            throw new \RuntimeException('Missing TYPO3 SYS/encryptionKey.');
         }
 
-        // Derive 32 bytes key deterministisch
+        // Derive a fixed 32-byte key required by sodium_crypto_secretbox
         return hash('sha256', $encKey, true);
     }
 

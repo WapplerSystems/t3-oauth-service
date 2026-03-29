@@ -1,22 +1,40 @@
 {
-	"name": "wapplersystems/oauth-service",
-	"type": "typo3-cms-extension",
-	"description": "",
-	"homepage": "https://wappler.systems",
-	"license": [
-		"GPL-2.0+"
-	],
-	"require": {
-		"typo3/cms-core": "^13"
-	},
-	"autoload": {
-		"psr-4": {
-			"WapplerSystems\\OauthService\\": "Classes"
-		}
-	},
-	"extra": {
-		"typo3/cms": {
-			"extension-key": "oauth_service"
-		}
-	}
+    "name": "wapplersystems/oauth-service",
+    "type": "typo3-cms-extension",
+    "description": "OAuth2 service and token management for TYPO3",
+    "homepage": "https://github.com/WapplerSystems/t3-oauth-service",
+    "license": "GPL-2.0-or-later",
+    "keywords": [
+        "TYPO3",
+        "extension",
+        "oauth",
+        "oauth2",
+        "authentication"
+    ],
+    "authors": [
+        {
+            "name": "Sven Wappler",
+            "email": "typo3@wappler.systems",
+            "role": "Developer",
+            "homepage": "https://wappler.systems"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/WapplerSystems/t3-oauth-service/issues",
+        "source": "https://github.com/WapplerSystems/t3-oauth-service"
+    },
+    "require": {
+        "typo3/cms-core": "^13",
+        "ext-sodium": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "WapplerSystems\\OauthService\\": "Classes"
+        }
+    },
+    "extra": {
+        "typo3/cms": {
+            "extension-key": "oauth_service"
+        }
+    }
 }

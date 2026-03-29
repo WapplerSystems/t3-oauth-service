@@ -18,6 +18,7 @@ class Client extends AbstractDomainObject {
     protected ?string $meta = null;
     protected bool $isActive = false;
     protected string $scopes;
+    protected ?string $notifyEmail = null;
 
 
     /**
@@ -108,6 +109,16 @@ class Client extends AbstractDomainObject {
     public function setScopes(string $scopes): void
     {
         $this->scopes = $scopes;
+    }
+
+    public function getNotifyEmail(): ?string
+    {
+        return $this->notifyEmail;
+    }
+
+    public function setNotifyEmail(?string $notifyEmail): void
+    {
+        $this->notifyEmail = $notifyEmail;
     }
 
     public function getConnections(): ObjectStorage

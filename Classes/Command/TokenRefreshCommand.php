@@ -11,6 +11,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
+use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use WapplerSystems\OauthService\Crypto\CryptoService;
 use WapplerSystems\OauthService\Domain\Repository\ClientRepository;
 use WapplerSystems\OauthService\Domain\Repository\ConnectionRepository;
@@ -39,24 +40,25 @@ final class TokenRefreshCommand extends Command
     protected function configure(): void
     {
         $this
+            ->setDescription($this->translate('refresh.description'))
             ->addOption(
                 'threshold',
                 't',
                 InputOption::VALUE_OPTIONAL,
-                'Tokens refreshen die in weniger als X Sekunden ablaufen (0 = nur bereits abgelaufene).',
+                $this->translate('refresh.option.threshold'),
                 null,
             )
             ->addOption(
                 'uid',
                 null,
                 InputOption::VALUE_OPTIONAL,
-                'Nur eine bestimmte Verbindung refreshen (UID).',
+                $this->translate('refresh.option.uid'),
             )
             ->addOption(
                 'force',
                 'f',
                 InputOption::VALUE_NONE,
-                'Alle Verbindungen refreshen, unabhängig vom Ablaufzeitpunkt.',
+                $this->translate('refresh.option.force'),
             );
     }
 
@@ -82,11 +84,11 @@ final class TokenRefreshCommand extends Command
         $connections = $this->connectionRepository->findForRefresh($thresholdSeconds, $uid);
 
         if (empty($connections)) {
-            $io->success('Keine Verbindungen gefunden, die einen Refresh benötigen.');
+            $io->success($this->translate('refresh.success.noConnections'));
             return Command::SUCCESS;
         }
 
-        $io->writeln(sprintf('<info>%d Verbindung(en) werden geprüft …</info>', count($connections)));
+        $io->writeln(sprintf('<info>%s</info>', $this->translate('refresh.info.checking', [count($connections)])));
 
         $refreshed = 0;
         $failed    = 0;
@@ -99,13 +101,18 @@ final class TokenRefreshCommand extends Command
             $client = $this->clientRepository->findByUid((int)$conn['client']);
 
             if ($client === null || !$client->getIsActive()) {
-                $io->writeln(sprintf('  <comment>→ "%s": Client nicht gefunden oder inaktiv, übersprungen.</comment>', $label));
+                $io->writeln(sprintf('  <comment>%s</comment>', $this->translate('refresh.skip.clientInactive', [$label])));
                 continue;
+            }
+
+            $expiresAt = (int)($conn['access_token_expires_at'] ?? 0);
+            if ($expiresAt > 0 && $expiresAt <= time()) {
+                $this->connectionRepository->updateFields($connUid, ['status' => 'expired']);
             }
 
             $refreshToken = $this->cryptoService->decrypt($conn['refresh_token'] ?? '') ?? '';
             if ($refreshToken === '') {
-                $io->writeln(sprintf('  <comment>→ "%s": Kein Refresh-Token vorhanden, übersprungen.</comment>', $label));
+                $io->writeln(sprintf('  <comment>%s</comment>', $this->translate('refresh.skip.noRefreshToken', [$label])));
                 continue;
             }
 
@@ -114,7 +121,7 @@ final class TokenRefreshCommand extends Command
                 $providerType       = $this->providerTypeResolver->resolve($providerDefinition->type);
 
                 if (!$providerType->supportsRefresh()) {
-                    $io->writeln(sprintf('  <comment>→ "%s": Provider unterstützt kein Refresh, übersprungen.</comment>', $label));
+                    $io->writeln(sprintf('  <comment>%s</comment>', $this->translate('refresh.skip.noRefreshSupport', [$label])));
                     continue;
                 }
 
@@ -125,7 +132,7 @@ final class TokenRefreshCommand extends Command
                     $newExpiresAt = time() + (int)$token['expires_in'];
                 }
 
-                $this->connectionRepository->update($connUid, [
+                $this->connectionRepository->updateFields($connUid, [
                     'status'               => 'connected',
                     'access_token'         => $this->cryptoService->encrypt((string)$token['access_token']),
                     'refresh_token'        => $this->cryptoService->encrypt((string)($token['refresh_token'] ?? $refreshToken)),
@@ -137,17 +144,17 @@ final class TokenRefreshCommand extends Command
                 ]);
 
                 $expiresStr = $newExpiresAt > 0 ? date('d.m.Y H:i', $newExpiresAt) : '—';
-                $io->writeln(sprintf('  <info>✓ "%s": Token erfolgreich erneuert (läuft ab: %s).</info>', $label, $expiresStr));
+                $io->writeln(sprintf('  <info>%s</info>', $this->translate('refresh.success.renewed', [$label, $expiresStr])));
                 $refreshed++;
 
             } catch (\Throwable $e) {
-                $this->connectionRepository->update($connUid, [
+                $this->connectionRepository->updateFields($connUid, [
                     'status'             => 'error',
                     'last_error_code'    => 'refresh_failed',
                     'last_error_message' => $e->getMessage(),
                 ]);
 
-                $io->writeln(sprintf('  <error>✗ "%s": Refresh fehlgeschlagen – %s</error>', $label, $e->getMessage()));
+                $io->writeln(sprintf('  <error>%s</error>', $this->translate('refresh.error.failed', [$label, $e->getMessage()])));
                 $failed++;
 
                 $this->sendFailureNotification(
@@ -163,7 +170,7 @@ final class TokenRefreshCommand extends Command
         }
 
         $io->newLine();
-        $io->success(sprintf('%d erneuert, %d fehlgeschlagen.', $refreshed, $failed));
+        $io->success($this->translate('refresh.success.summary', [$refreshed, $failed]));
 
         return $failed > 0 ? Command::FAILURE : Command::SUCCESS;
     }
@@ -186,19 +193,28 @@ final class TokenRefreshCommand extends Command
             return;
         }
 
-        $subject = sprintf('[OAuth] Token-Refresh fehlgeschlagen: %s', $connectionLabel);
+        $subject = $this->translate('refresh.email.subject', [$connectionLabel]);
         $body    = implode("\n", [
-            'Beim automatischen Token-Refresh ist ein Fehler aufgetreten.',
+            $this->translate('refresh.email.intro'),
             '',
-            'Client:      ' . $clientTitle,
-            'Verbindung:  ' . $connectionLabel,
-            'UID:         ' . $connectionUid,
-            'Fehler:      ' . $errorMessage,
-            'Zeit:        ' . date('d.m.Y H:i:s'),
+            $this->translate('refresh.email.label.client') . $clientTitle,
+            $this->translate('refresh.email.label.connection') . $connectionLabel,
+            $this->translate('refresh.email.label.uid') . $connectionUid,
+            $this->translate('refresh.email.label.error') . $errorMessage,
+            $this->translate('refresh.email.label.time') . date('d.m.Y H:i:s'),
         ]);
 
         $this->notificationService->sendFailureMail($email, $subject, $body);
 
-        $this->connectionRepository->update($connectionUid, ['last_notified_at' => time()]);
+        $this->connectionRepository->updateFields($connectionUid, ['last_notified_at' => time()]);
+    }
+
+    private function translate(string $key, array $arguments = []): string
+    {
+        return LocalizationUtility::translate(
+            'LLL:EXT:oauth_service/Resources/Private/Language/locallang_cmd.xlf:' . $key,
+            'OauthService',
+            $arguments !== [] ? $arguments : null,
+        ) ?? $key;
     }
 }

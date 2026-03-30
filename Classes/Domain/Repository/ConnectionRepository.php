@@ -96,7 +96,7 @@ final class ConnectionRepository extends Repository
     {
         $qb = $this->connectionPool->getQueryBuilderForTable(self::TABLE);
         return $qb
-            ->select('conn.uid', 'conn.status')
+            ->select('conn.uid', 'conn.access_token', 'conn.status')
             ->from(self::TABLE, 'conn')
             ->innerJoin('conn', 'tx_oauthsvc_client', 'client', 'conn.client = client.uid')
             ->where(
@@ -107,6 +107,25 @@ final class ConnectionRepository extends Repository
             ->orderBy('conn.uid', 'ASC')
             ->executeQuery()
             ->fetchAllAssociative();
+    }
+
+    public function findFirstActiveConnectionByProvider(string $provider): ?array
+    {
+        $qb = $this->connectionPool->getQueryBuilderForTable(self::TABLE);
+        $result = $qb
+            ->select('conn.uid', 'conn.access_token', 'conn.status')
+            ->from(self::TABLE, 'conn')
+            ->innerJoin('conn', 'tx_oauthsvc_client', 'client', 'conn.client = client.uid')
+            ->where(
+                $qb->expr()->eq('conn.status', $qb->createNamedParameter('connected')),
+                $qb->expr()->eq('client.provider', $qb->createNamedParameter($provider)),
+                $qb->expr()->eq('client.is_active', $qb->createNamedParameter(1, ParameterType::INTEGER))
+            )
+            ->orderBy('conn.uid', 'ASC')
+            ->setMaxResults(1)
+            ->executeQuery()
+            ->fetchAssociative();
+        return $result ?: null;
     }
 
     public function updateFields(int $uid, array $data): void

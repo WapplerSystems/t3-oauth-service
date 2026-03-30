@@ -6,6 +6,8 @@ namespace WapplerSystems\OauthService\Service;
 use Doctrine\DBAL\ParameterType;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
+use WapplerSystems\OauthService\Crypto\CryptoService;
+use WapplerSystems\OauthService\Domain\Repository\ConnectionRepository;
 
 final class OAuthClientService
 {
@@ -13,6 +15,8 @@ final class OAuthClientService
 
     public function __construct(
         private readonly ConnectionPool $connectionPool,
+        private readonly ConnectionRepository $connectionRepository,
+        private readonly CryptoService $cryptoService,
     ) {}
 
     /**
@@ -47,5 +51,22 @@ final class OAuthClientService
         }
 
         return $options;
+    }
+
+    /**
+     * Liefert die erste aktive Verbindung für einen Provider mit entschlüsseltem Access-Token.
+     * Gibt null zurück, wenn keine aktive Verbindung existiert.
+     *
+     * @return array{uid: int, access_token: string, status: string}|null
+     */
+    public function getActiveConnectionByProvider(string $provider): ?array
+    {
+        $connection = $this->connectionRepository->findFirstActiveConnectionByProvider($provider);
+        if ($connection === null) {
+            return null;
+        }
+
+        $connection['access_token'] = $this->cryptoService->decrypt($connection['access_token']) ?? '';
+        return $connection;
     }
 }

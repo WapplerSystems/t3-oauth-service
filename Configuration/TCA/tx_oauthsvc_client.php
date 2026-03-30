@@ -23,7 +23,6 @@ return [
         ],
 
         'searchFields' => 'provider,notify_email,scopes',
-        'default_sortby' => 'ORDER BY title',
     ],
 
     'types' => [
@@ -45,7 +44,7 @@ return [
 
     'palettes' => [
         'general' => [
-            'showitem' => 'title, provider, is_active',
+            'showitem' => 'provider, is_active',
         ],
     ],
 

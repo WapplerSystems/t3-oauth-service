@@ -203,6 +203,11 @@
 				<target>Verbindung %1$s</target>
 			</trans-unit>
 
+			<trans-unit id="client.selectLabel">
+				<source>%1$s (%2$s)</source>
+				<target>%1$s (%2$s)</target>
+			</trans-unit>
+
 			<!-- Messages -->
 			<trans-unit id="msg.confirmDisconnect">
 				<source>Disconnect this connection?</source>

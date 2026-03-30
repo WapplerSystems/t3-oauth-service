@@ -76,6 +76,22 @@ final class ConnectionRepository extends Repository
             ->fetchAllAssociative();
     }
 
+    public function findActiveConnectionByClientUid(int $clientUid): ?array
+    {
+        $qb = $this->connectionPool->getQueryBuilderForTable(self::TABLE);
+        $result = $qb
+            ->select('uid', 'access_token', 'status')
+            ->from(self::TABLE)
+            ->where(
+                $qb->expr()->eq('client', $qb->createNamedParameter($clientUid, ParameterType::INTEGER)),
+                $qb->expr()->eq('status', $qb->createNamedParameter('connected'))
+            )
+            ->setMaxResults(1)
+            ->executeQuery()
+            ->fetchAssociative();
+        return $result ?: null;
+    }
+
     public function findActiveByProvider(string $provider): array
     {
         $qb = $this->connectionPool->getQueryBuilderForTable(self::TABLE);

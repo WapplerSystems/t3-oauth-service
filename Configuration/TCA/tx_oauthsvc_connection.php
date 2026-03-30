@@ -124,7 +124,7 @@ return [
         'refresh_token' => [
             'label' => 'Refresh token (encrypted)',
             'config' => [
-                'type' => 'input',
+                'type' => 'text',
                 'size' => 20,
                 'readOnly' => true,
             ],

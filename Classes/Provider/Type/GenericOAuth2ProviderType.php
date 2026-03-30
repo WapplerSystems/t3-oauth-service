@@ -75,7 +75,7 @@ final class GenericOAuth2ProviderType implements OAuthProviderTypeInterface
 
         $tokenEndpoint = $provider->tokenUrl;
         if ($tokenEndpoint === '') {
-            throw new \RuntimeException('Missing token_endpoint in client.meta JSON');
+            throw new \RuntimeException('Missing token endpoint for provider: ' . $providerKey);
         }
 
         $resp = $this->requestFactory->request($tokenEndpoint, 'POST', [
@@ -87,7 +87,7 @@ final class GenericOAuth2ProviderType implements OAuthProviderTypeInterface
             ],
         ]);
 
-        $data = json_decode((string)$resp->getBody()->getContents(), true);
+        $data = json_decode($resp->getBody()->getContents(), true);
         if (!is_array($data) || empty($data['access_token'])) {
             throw new \RuntimeException('Invalid refresh response from provider');
         }

@@ -50,7 +50,6 @@ final class OAuthFlowService
             $connection = new Connection();
             $connection->setPid($client->getPid());
             $connection->setClient($client);
-            $connection->setLabel($label ?: (LocalizationUtility::translate('connection.defaultLabel', 'OauthService', [date('Y-m-d H:i')]) ?? ('Connection ' . date('Y-m-d H:i'))));
             $connection->setStatus(Connection::DISCONNECTED);
             $connection->setStateHash($stateHash);
             $connection->setStateCreatedAt(time());

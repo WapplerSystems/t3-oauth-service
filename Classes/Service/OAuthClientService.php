@@ -54,6 +54,23 @@ final class OAuthClientService
     }
 
     /**
+     * Liefert die aktive Verbindung eines bestimmten Clients mit entschlüsseltem Access-Token.
+     * Gibt null zurück, wenn keine aktive Verbindung existiert.
+     *
+     * @return array{uid: int, access_token: string, status: string}|null
+     */
+    public function getActiveConnectionByClientUid(int $clientUid): ?array
+    {
+        $connection = $this->connectionRepository->findActiveConnectionByClientUid($clientUid);
+        if ($connection === null) {
+            return null;
+        }
+
+        $connection['access_token'] = $this->cryptoService->decrypt($connection['access_token']) ?? '';
+        return $connection;
+    }
+
+    /**
      * Liefert die erste aktive Verbindung für einen Provider mit entschlüsseltem Access-Token.
      * Gibt null zurück, wenn keine aktive Verbindung existiert.
      *

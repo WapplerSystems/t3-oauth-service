@@ -23,13 +23,6 @@ final class GenericOAuth2ProviderType implements OAuthProviderTypeInterface
         return true;
     }
 
-    private function getMeta(Client $client): array
-    {
-        $meta = $client->getMeta() ?? '';
-        $data = $meta !== '' ? json_decode($meta, true) : [];
-        return is_array($data) ? $data : [];
-    }
-
     public function buildAuthorizationUrl(Client $client, string $providerAuthorizationUrl, string $redirectUri, string $state, array $scopes = []): string
     {
         $params = [

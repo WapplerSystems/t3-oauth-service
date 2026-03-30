@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace WapplerSystems\OauthService\Service;
 
 use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Backend\Routing\UriBuilder as BackendUriBuilder;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
+use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use WapplerSystems\OauthService\Crypto\CryptoService;
 use WapplerSystems\OauthService\Domain\Model\Client;
 use WapplerSystems\OauthService\Domain\Model\Connection;
-use WapplerSystems\OauthService\Provider\ProviderRegistry;
-use WapplerSystems\OauthService\Provider\Type\ProviderTypeResolver;
 use WapplerSystems\OauthService\Domain\Repository\ClientRepository;
 use WapplerSystems\OauthService\Domain\Repository\ConnectionRepository;
-use TYPO3\CMS\Backend\Routing\UriBuilder as BackendUriBuilder;
+use WapplerSystems\OauthService\Provider\ProviderRegistry;
+use WapplerSystems\OauthService\Provider\Type\ProviderTypeResolver;
 
 final class OAuthFlowService
 {
@@ -49,7 +50,7 @@ final class OAuthFlowService
             $connection = new Connection();
             $connection->setPid($client->getPid());
             $connection->setClient($client);
-            $connection->setLabel($label ?: ('Connection ' . date('Y-m-d H:i')));
+            $connection->setLabel($label ?: (LocalizationUtility::translate('connection.defaultLabel', 'OauthService', [date('Y-m-d H:i')]) ?? ('Connection ' . date('Y-m-d H:i'))));
             $connection->setStatus(Connection::DISCONNECTED);
             $connection->setStateHash($stateHash);
             $connection->setStateCreatedAt(time());

@@ -11,12 +11,11 @@ final class ConnectionRepository extends Repository
 {
     private const string TABLE = 'tx_oauthsvc_connection';
 
-    private ConnectionPool $connectionPool;
 
-    public function injectConnectionPool(ConnectionPool $connectionPool): void
-    {
-        $this->connectionPool = $connectionPool;
+    public function __construct(readonly ConnectionPool $connectionPool) {
+        parent::__construct();
     }
+
 
     public function findAllForMonitoring(): array
     {
@@ -35,7 +34,7 @@ final class ConnectionRepository extends Repository
     {
         $now = time();
         $qb = $this->connectionPool->getQueryBuilderForTable(self::TABLE);
-        return $qb->select('uid', 'label', 'status', 'client', 'access_token_expires_at', 'last_notified_at')
+        return $qb->select('uid', 'status', 'client', 'access_token_expires_at', 'last_notified_at')
             ->from(self::TABLE)
             ->where(
                 $qb->expr()->gt('access_token_expires_at', $qb->createNamedParameter(0, ParameterType::INTEGER)),
@@ -73,6 +72,23 @@ final class ConnectionRepository extends Repository
             ->from(self::TABLE)
             ->where(...$conditions)
             ->orderBy('access_token_expires_at', 'ASC')
+            ->executeQuery()
+            ->fetchAllAssociative();
+    }
+
+    public function findActiveByProvider(string $provider): array
+    {
+        $qb = $this->connectionPool->getQueryBuilderForTable(self::TABLE);
+        return $qb
+            ->select('conn.uid', 'conn.status')
+            ->from(self::TABLE, 'conn')
+            ->innerJoin('conn', 'tx_oauthsvc_client', 'client', 'conn.client = client.uid')
+            ->where(
+                $qb->expr()->eq('conn.status', $qb->createNamedParameter('connected')),
+                $qb->expr()->eq('client.provider', $qb->createNamedParameter($provider)),
+                $qb->expr()->eq('client.is_active', $qb->createNamedParameter(1, ParameterType::INTEGER))
+            )
+            ->orderBy('conn.uid', 'ASC')
             ->executeQuery()
             ->fetchAllAssociative();
     }

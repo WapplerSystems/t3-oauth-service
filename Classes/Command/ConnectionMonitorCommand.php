@@ -104,7 +104,7 @@ final class ConnectionMonitorCommand extends Command
 
             $daysLeft   = (int)ceil($secondsLeft / 86400);
             $expiresStr = date('d.m.Y H:i', $expiresAt);
-            $label      = ($conn['label'] ?? '') ?: ('#' . $conn['uid']);
+            $label      = ('#' . $conn['uid']);
             $urgency    = $daysLeft <= 1
                 ? $this->translate('monitor.urgency.critical')
                 : $this->translate('monitor.urgency.warning');

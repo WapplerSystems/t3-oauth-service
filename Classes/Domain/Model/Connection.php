@@ -19,7 +19,6 @@ class Connection extends AbstractDomainObject
     protected ?\DateTimeImmutable $refreshTokenExpiresAt = null;
     protected ?string $scope = null;
     protected ?string $resourceOwnerId = null;
-    protected ?string $label = null;
     protected ?string $status = null;
     protected ?string $stateHash = null;
     protected ?int $stateCreatedAt = null;
@@ -99,16 +98,6 @@ class Connection extends AbstractDomainObject
     public function setResourceOwnerId(?string $resourceOwnerId): void
     {
         $this->resourceOwnerId = $resourceOwnerId;
-    }
-
-    public function getLabel(): ?string
-    {
-        return $this->label;
-    }
-
-    public function setLabel(?string $label): void
-    {
-        $this->label = $label;
     }
 
     public function getStatus(): ?string

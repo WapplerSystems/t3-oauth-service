@@ -5,17 +5,14 @@ namespace WapplerSystems\OauthService\Domain\Model;
 
 use TYPO3\CMS\Extbase\DomainObject\AbstractDomainObject;
 use TYPO3\CMS\Extbase\Persistence\ObjectStorage;
-use WapplerSystems\OauthService\Provider\ProviderDefinition;
 
 class Client extends AbstractDomainObject {
 
-    protected ?string $title = null;
     protected ?string $provider = null;
     protected ?string $accessTokenUrl = null;
     protected ?string $clientId = null;
     protected ?string $clientSecret = null;
     protected ?string $tokenMethod = null;
-    protected ?string $meta = null;
     protected bool $isActive = false;
     protected string $scopes;
     protected ?string $notifyEmail = null;
@@ -29,16 +26,6 @@ class Client extends AbstractDomainObject {
 
     public function __construct() {
         $this->connections = new ObjectStorage();
-    }
-
-    public function getTitle(): ?string
-    {
-        return $this->title;
-    }
-
-    public function setTitle(?string $title): void
-    {
-        $this->title = $title;
     }
 
     public function getProvider(): ?string
@@ -80,26 +67,6 @@ class Client extends AbstractDomainObject {
     {
         $this->isActive = $isActive;
     }
-
-    public function getMeta(): ?string
-    {
-        return $this->meta;
-    }
-
-    public function getMetaDecoded(): array
-    {
-        if ($this->meta === null) {
-            return [];
-        }
-        $data = json_decode($this->meta, true);
-        return is_array($data) ? $data : [];
-    }
-
-    public function setMeta(?string $meta): void
-    {
-        $this->meta = $meta;
-    }
-
 
     public function getScopes(): string
     {

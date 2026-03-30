@@ -160,6 +160,10 @@
 				<source>Delete client</source>
 			</trans-unit>
 
+			<trans-unit id="connection.defaultLabel">
+				<source>Connection %1$s</source>
+			</trans-unit>
+
 			<!-- Messages -->
 			<trans-unit id="msg.confirmDisconnect">
 				<source>Disconnect this connection?</source>

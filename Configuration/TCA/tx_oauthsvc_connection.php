@@ -5,7 +5,7 @@ declare(strict_types=1);
 return [
     'ctrl' => [
         'title' => 'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:connection',
-        'label' => 'label',
+        'label' => 'uid',
         'label_alt' => 'status,client',
         'label_alt_force' => true,
         'groupName' => 'system',
@@ -22,8 +22,7 @@ return [
             'default' => 'mimetypes-x-sys_redirect',
         ],
 
-        'searchFields' => 'label,status,last_error_code,last_error_message,remote_subject',
-        'default_sortby' => 'ORDER BY label',
+        'searchFields' => 'status,last_error_code,last_error_message,remote_subject',
     ],
 
     'types' => [
@@ -37,8 +36,6 @@ return [
                     last_check_at, last_error_code, last_error_message, last_notified_at,
                 --div--;State,
                     state_hash, state_created_at,
-                --div--;Meta,
-                    meta,
                 --div--;Internal,
                     access_token, refresh_token,
             ',
@@ -61,15 +58,6 @@ return [
                 'foreign_table_where' => 'ORDER BY tx_oauthsvc_client.title',
                 'minitems' => 1,
                 'maxitems' => 1,
-            ],
-        ],
-
-        'label' => [
-            'label' => 'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:connection.label',
-            'config' => [
-                'type' => 'input',
-                'size' => 60,
-                'eval' => 'trim,required',
             ],
         ],
 
@@ -187,16 +175,6 @@ return [
             'config' => [
                 'type' => 'datetime',
                 'readOnly' => true,
-            ],
-        ],
-
-        'meta' => [
-            'label' => 'Meta (JSON)',
-            'config' => [
-                'type' => 'text',
-                'rows' => 8,
-                'cols' => 80,
-                'eval' => 'trim',
             ],
         ],
 

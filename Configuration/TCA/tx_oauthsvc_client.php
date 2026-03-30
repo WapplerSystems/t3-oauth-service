@@ -5,7 +5,7 @@ declare(strict_types=1);
 return [
     'ctrl' => [
         'title' => 'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:clients',
-        'label' => 'title',
+        'label' => 'uid',
         'label_alt' => 'provider',
         'label_alt_force' => true,
         'groupName' => 'system',
@@ -22,7 +22,7 @@ return [
             'default' => 'mimetypes-x-sys_redirect',
         ],
 
-        'searchFields' => 'title,provider,notify_email,scopes',
+        'searchFields' => 'provider,notify_email,scopes',
         'default_sortby' => 'ORDER BY title',
     ],
 
@@ -30,15 +30,13 @@ return [
         '1' => [
             'showitem' => '
                 --div--;Client,
-                    title, provider, is_active,
+                    provider, is_active,
                 --div--;Credentials,
                     client_id, client_secret,
                 --div--;Scopes,
                     scopes,
                 --div--;Monitoring,
                     notify_email,
-                --div--;Provider Meta,
-                    meta,
                 --div--;Connections,
                     connections,
             ',
@@ -55,15 +53,6 @@ return [
         'pid' => [
             'config' => [
                 'type' => 'passthrough',
-            ],
-        ],
-
-        'title' => [
-            'label' => 'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:client.title',
-            'config' => [
-                'type' => 'input',
-                'size' => 50,
-                'eval' => 'trim,required',
             ],
         ],
 
@@ -122,18 +111,6 @@ return [
                 'type' => 'input',
                 'size' => 60,
                 'eval' => 'trim,email',
-            ],
-        ],
-
-        // JSON für Provider-Endpoints etc.
-        'meta' => [
-            'label' => 'Meta (JSON)',
-            'description' => 'Example: {"authorization_endpoint":"...","token_endpoint":"..."}',
-            'config' => [
-                'type' => 'text',
-                'rows' => 8,
-                'cols' => 80,
-                'eval' => 'trim',
             ],
         ],
 

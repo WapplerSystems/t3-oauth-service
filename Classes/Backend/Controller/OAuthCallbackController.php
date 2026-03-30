@@ -5,8 +5,8 @@ namespace WapplerSystems\OauthService\Backend\Controller;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use WapplerSystems\OauthService\Service\OAuthFlowService;
 use TYPO3\CMS\Core\Http\HtmlResponse;
+use WapplerSystems\OauthService\Service\OAuthFlowService;
 
 final class OAuthCallbackController
 {
@@ -27,7 +27,7 @@ final class OAuthCallbackController
         }
 
         try {
-            $connectionUid = $this->flowService->handleCallback($code, $state);
+            $connectionUid = $this->flowService->handleCallback($request, $code, $state);
 
         } catch (\Throwable $e) {
             return new HtmlResponse('<h1>Callback failed</h1><pre>' . htmlspecialchars($e->getMessage()) . '</pre>', 500);

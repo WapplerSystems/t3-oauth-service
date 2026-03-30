@@ -19,7 +19,7 @@
 
                         <div class="panel panel-default" style="margin-bottom: 18px;">
                             <div class="panel-heading" style="display: flex; align-items: center; justify-content: space-between;">
-                                <span><strong>{client.title}</strong> ({client.clientId})</span>
+                                <span><strong>{client.provider} ({client.clientId})</strong></span>
 
                                 <f:link.action
                                     action="deleteClient"
@@ -34,21 +34,6 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <dl class="dl-horizontal">
-                                            <dt>
-                                                <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:client.provider"/>
-                                            </dt>
-                                            <dd>{client.provider}</dd>
-
-                                            <dt>
-                                                <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:client.notifyEmail"/>
-                                            </dt>
-                                            <dd>
-                                                <f:if condition="{client.notifyEmail}">
-                                                    <f:then>{client.notifyEmail}</f:then>
-                                                    <f:else>-</f:else>
-                                                </f:if>
-                                            </dd>
-
                                             <dt>
                                                 <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:client.isActive"/>
                                             </dt>
@@ -123,7 +108,7 @@
                                                 <f:for each="{client.connections}" as="conn">
                                                     <tr>
                                                         <td>
-                                                            <strong>{conn.label}</strong>
+                                                            <strong>{f:translate(key: 'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:connection')} {conn.uid}</strong>
                                                             <f:if condition="{conn.remote_subject}">
                                                                 <div style="opacity:.75; font-size: 12px;">
                                                                     {f:translate(key: 'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:connection.remoteSubject')}: {conn.remote_subject}

@@ -7,12 +7,14 @@ namespace WapplerSystems\OauthService\Provider\Type;
 use TYPO3\CMS\Core\Http\RequestFactory;
 use WapplerSystems\OauthService\Attribute\OAuthProviderType;
 use WapplerSystems\OauthService\Domain\Model\Client;
+use WapplerSystems\OauthService\Domain\Model\Connection;
 use WapplerSystems\OauthService\Provider\ProviderDefinition;
+use WapplerSystems\OauthService\Provider\ProviderRegistry;
 
 #[OAuthProviderType('generic_oauth2')]
 final class GenericOAuth2ProviderType implements OAuthProviderTypeInterface
 {
-    public function __construct(private readonly RequestFactory $requestFactory)
+    public function __construct(private readonly RequestFactory $requestFactory, private readonly ProviderRegistry $providerRegistry)
     {
     }
 
@@ -65,10 +67,13 @@ final class GenericOAuth2ProviderType implements OAuthProviderTypeInterface
         return $data;
     }
 
-    public function refreshToken(Client $client, string $refreshToken): array
+    public function refreshToken(Client $client, Connection $connection, string $refreshToken): array
     {
-        $meta = $client->getMeta() ?? '';
-        $tokenEndpoint = (string)($meta['token_endpoint'] ?? '');
+
+        $providerKey = $client->getProvider();
+        $provider = $this->providerRegistry->get((string)$providerKey);
+
+        $tokenEndpoint = $provider->tokenUrl;
         if ($tokenEndpoint === '') {
             throw new \RuntimeException('Missing token_endpoint in client.meta JSON');
         }

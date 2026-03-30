@@ -13,6 +13,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use WapplerSystems\OauthService\Crypto\CryptoService;
+use WapplerSystems\OauthService\Domain\Model\Connection;
 use WapplerSystems\OauthService\Domain\Repository\ClientRepository;
 use WapplerSystems\OauthService\Domain\Repository\ConnectionRepository;
 use WapplerSystems\OauthService\Provider\ProviderRegistry;
@@ -125,7 +126,9 @@ final class TokenRefreshCommand extends Command
                     continue;
                 }
 
-                $token = $providerType->refreshToken($client, $refreshToken);
+                /** @var Connection $connection */
+                $connection = $this->connectionRepository->findByUid((int)$conn['uid']);
+                $token = $providerType->refreshToken($client, $connection, $refreshToken);
 
                 $newExpiresAt = 0;
                 if (!empty($token['expires_in']) && is_numeric($token['expires_in'])) {

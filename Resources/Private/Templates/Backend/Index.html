@@ -24,7 +24,8 @@
                                 <f:link.action
                                     action="deleteClient"
                                     arguments="{client: client.uid}"
-                                    class="btn btn-danger btn-sm">
+                                    class="btn btn-danger btn-sm"
+                                    additionalAttributes="{onclick: 'javascript:return confirm(\'{f:translate(key: \'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:msg.confirmDisconnect\')}\');'}">
                                     <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.deleteClient"/>
                                 </f:link.action>
                             </div>
@@ -230,13 +231,13 @@
                                                                     </f:link.action>
                                                                 </f:if>
 
-                                                                    <f:link.action
-                                                                        action="disconnect"
-                                                                        arguments="{connection: conn.uid}"
-                                                                        class="btn btn-danger btn-sm"
-                                                                        additionalAttributes="{onclick: 'return confirm(&quot;{f:translate(key: \'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:msg.confirmDisconnect\')}&quot;);'}">
-                                                                        <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.disconnect"/>
-                                                                    </f:link.action>
+                                                                <f:link.action
+                                                                    action="disconnect"
+                                                                    arguments="{connection: conn.uid}"
+                                                                    class="btn btn-danger btn-sm"
+                                                                    additionalAttributes="{onclick: 'return confirm(\'{f:translate(key: \'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:msg.confirmDisconnect\')}\');'}">
+                                                                    <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.disconnect"/>
+                                                                </f:link.action>
                                                             </div>
                                                         </td>
                                                     </tr>

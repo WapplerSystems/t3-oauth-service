@@ -163,7 +163,7 @@ class OAuthModuleController extends ActionController
         $moduleTemplate = $this->moduleTemplateFactory->create($this->request);
 
         $clientUid = (int)($this->request->getArgument('client') ?? 0);
-        $authUrl = $this->oAuthFlowService->startAuthorization($clientUid, $this->request, null, null);
+        $authUrl = $this->oAuthFlowService->startAuthorization($clientUid, $this->request);
 
         $moduleTemplate->assignMultiple([
             'authorizeUrl' => $authUrl,
@@ -179,7 +179,7 @@ class OAuthModuleController extends ActionController
         $connectionUid = (int)($this->request->getArgument('connection') ?? 0);
         $connection = $this->connectionRepository->findByUid($connectionUid);
         $clientUid = $connection->getClient()->getUid();
-        $authUrl = $this->oAuthFlowService->startAuthorization($clientUid, $this->request, $connectionUid, null);
+        $authUrl = $this->oAuthFlowService->startAuthorization($clientUid, $this->request, $connectionUid);
 
         $moduleTemplate->assignMultiple([
             'authorizeUrl' => $authUrl,

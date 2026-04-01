@@ -34,7 +34,7 @@ final class OAuthFlowService
     /**
      * Startet den OAuth-Flow. Gibt die Provider-Auth-URL zurück (Controller macht Redirect).
      */
-    public function startAuthorization(int $clientUid, ServerRequestInterface $request, ?int $connectionUid = null, ?string $label = null): string
+    public function startAuthorization(int $clientUid, ServerRequestInterface $request, ?int $connectionUid = null): string
     {
         /** @var ?Client $client */
         $client = $this->clientRepository->findByUid($clientUid);

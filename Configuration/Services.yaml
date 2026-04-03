@@ -21,3 +21,8 @@ services:
   WapplerSystems\OauthService\Provider\Type\ProviderTypeResolver:
     arguments:
       $providerTypes: !tagged_locator { tag: 'oauth_service.providertype', index_by: 'identifier' }
+
+  WapplerSystems\OauthService\Service\MetadataDiscoveryService:
+    public: true
+    arguments:
+      $cache: '@cache.hash'

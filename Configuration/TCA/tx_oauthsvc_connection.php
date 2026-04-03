@@ -36,6 +36,8 @@ return [
                     last_check_at, last_error_code, last_error_message, last_notified_at,
                 --div--;State,
                     state_hash, state_created_at,
+                --div--;Metadata,
+                    metadata,
                 --div--;Internal,
                     access_token, refresh_token,
             ',
@@ -174,6 +176,16 @@ return [
             'label' => 'Last notification',
             'config' => [
                 'type' => 'datetime',
+                'readOnly' => true,
+            ],
+        ],
+
+        'metadata' => [
+            'label' => 'Provider Metadata (JSON)',
+            'config' => [
+                'type' => 'text',
+                'rows' => 10,
+                'cols' => 80,
                 'readOnly' => true,
             ],
         ],

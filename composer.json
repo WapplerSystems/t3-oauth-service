@@ -24,7 +24,7 @@
         "source": "https://github.com/WapplerSystems/t3-oauth-service"
     },
     "require": {
-        "typo3/cms-core": "^13",
+        "typo3/cms-core": "^14",
         "ext-sodium": "*"
     },
     "autoload": {

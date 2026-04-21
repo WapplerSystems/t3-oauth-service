@@ -2,7 +2,7 @@
 
 $EM_CONF[$_EXTKEY] = [
     'title' => 'OAuth Services for TYPO3',
-    'description' => '',
+    'description' => 'Central OAuth2 client and token management for TYPO3 — Authorization Code Flow with PKCE, encrypted token storage, automatic refresh and expiry monitoring',
     'category' => 'plugin',
     'author' => 'Sven Wappler',
     'author_email' => 'typo3YYYY@wappler.systems',

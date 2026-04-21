@@ -1,7 +1,7 @@
 {
     "name": "wapplersystems/oauth-service",
     "type": "typo3-cms-extension",
-    "description": "OAuth2 service and token management for TYPO3",
+    "description": "Central OAuth2 client and token management for TYPO3 — Authorization Code Flow with PKCE, encrypted token storage, automatic refresh and expiry monitoring",
     "homepage": "https://github.com/WapplerSystems/t3-oauth-service",
     "license": "GPL-2.0-or-later",
     "keywords": [

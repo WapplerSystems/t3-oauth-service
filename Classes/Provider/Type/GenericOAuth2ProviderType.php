@@ -23,7 +23,7 @@ final class GenericOAuth2ProviderType implements OAuthProviderTypeInterface
         return true;
     }
 
-    public function buildAuthorizationUrl(Client $client, string $providerAuthorizationUrl, string $redirectUri, string $state, array $scopes = []): string
+    public function buildAuthorizationUrl(Client $client, string $providerAuthorizationUrl, string $redirectUri, string $state, array $scopes = [], ?string $codeChallenge = null, string $codeChallengeMethod = 'S256'): string
     {
         $params = [
             'response_type' => 'code',
@@ -33,22 +33,30 @@ final class GenericOAuth2ProviderType implements OAuthProviderTypeInterface
         if (!empty($scopes)) {
             $params['scope'] = implode(' ', $scopes);
         }
+        if ($codeChallenge !== null) {
+            $params['code_challenge'] = $codeChallenge;
+            $params['code_challenge_method'] = $codeChallengeMethod;
+        }
         return $providerAuthorizationUrl . '?' . http_build_query($params);
     }
 
-    public function exchangeCodeForToken(ProviderDefinition $providerDefinition, Client $client, string $clientSecret, string $code, string $redirectUri): array
+    public function exchangeCodeForToken(ProviderDefinition $providerDefinition, Client $client, string $clientSecret, string $code, string $redirectUri, ?string $codeVerifier = null): array
     {
+        $formParams = [
+            'client_id' => $client->getClientId(),
+            'client_secret' => $clientSecret,
+            'grant_type' => 'authorization_code',
+            'code' => $code,
+            'redirect_uri' => $redirectUri,
+        ];
+        if ($codeVerifier !== null) {
+            $formParams['code_verifier'] = $codeVerifier;
+        }
         $response = $this->requestFactory->request(
             $providerDefinition->tokenUrl,
             'POST',
             [
-                'form_params' => [
-                    'client_id' => $client->getClientId(),
-                    'client_secret' => $clientSecret,
-                    'grant_type' => 'authorization_code',
-                    'code' => $code,
-                    'redirect_uri' => $redirectUri,
-                ],
+                'form_params' => $formParams,
                 'timeout' => 5,
             ]
         );

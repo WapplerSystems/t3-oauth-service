@@ -35,7 +35,7 @@ return [
                 --div--;Monitoring,
                     last_check_at, last_error_code, last_error_message, last_notified_at,
                 --div--;State,
-                    state_hash, state_created_at,
+                    state_hash, state_created_at, code_verifier,
                 --div--;Internal,
                     access_token, refresh_token,
             ',
@@ -166,6 +166,15 @@ return [
                 'type' => 'text',
                 'rows' => 5,
                 'cols' => 80,
+                'readOnly' => true,
+            ],
+        ],
+
+        'code_verifier' => [
+            'label' => 'Code verifier (encrypted, PKCE)',
+            'config' => [
+                'type' => 'text',
+                'size' => 20,
                 'readOnly' => true,
             ],
         ],

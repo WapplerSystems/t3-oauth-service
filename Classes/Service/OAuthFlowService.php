@@ -46,6 +46,9 @@ final class OAuthFlowService
         $state = bin2hex(random_bytes(24));
         $stateHash = hash('sha256', $state);
 
+        $codeVerifier = bin2hex(random_bytes(32));
+        $encryptedVerifier = $this->cryptoService->encrypt($codeVerifier);
+
         if ($connectionUid === null) {
             $connection = new Connection();
             $connection->setPid($client->getPid());
@@ -53,6 +56,7 @@ final class OAuthFlowService
             $connection->setStatus(Connection::DISCONNECTED);
             $connection->setStateHash($stateHash);
             $connection->setStateCreatedAt(time());
+            $connection->setCodeVerifier($encryptedVerifier);
 
             $this->connectionRepository->add($connection);
 
@@ -64,12 +68,15 @@ final class OAuthFlowService
             }
             $connection->setStateHash($stateHash);
             $connection->setStateCreatedAt(time());
+            $connection->setCodeVerifier($encryptedVerifier);
             $this->connectionRepository->update($connection);
         }
 
         $this->persistenceManager->persistAll();
 
-        return $this->buildAuthorizationUrl($client, $request, $state);
+        $codeChallenge = $this->generateCodeChallenge($codeVerifier);
+
+        return $this->buildAuthorizationUrl($client, $request, $state, $codeChallenge);
     }
 
     public function handleCallback(ServerRequestInterface $request, string $code, string $state): Connection
@@ -106,8 +113,13 @@ final class OAuthFlowService
 
         $clientSecretPlain = $this->cryptoService->decrypt($client->getClientSecret()) ?? $client->getClientSecret() ?? '';
 
+        $codeVerifier = null;
+        if ($conn->getCodeVerifier()) {
+            $codeVerifier = $this->cryptoService->decrypt($conn->getCodeVerifier());
+        }
+
         try {
-            $token = $providerType->exchangeCodeForToken($provider, $client, $clientSecretPlain, $code, $redirectUri);
+            $token = $providerType->exchangeCodeForToken($provider, $client, $clientSecretPlain, $code, $redirectUri, $codeVerifier);
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             $conn->setStatus(Connection::ERROR);
             $conn->setLastErrorCode((string)$e->getCode());
@@ -131,9 +143,10 @@ final class OAuthFlowService
         $conn->setLastCheckAt(new \DateTimeImmutable('now'));
         $conn->setLastErrorCode('');
         $conn->setLastErrorMessage('');
-        // delete state
+        // delete state and PKCE verifier
         $conn->setStateHash('');
         $conn->setStateCreatedAt(0);
+        $conn->setCodeVerifier(null);
         $this->connectionRepository->update($conn);
         $this->persistenceManager->persistAll();
 
@@ -159,7 +172,7 @@ final class OAuthFlowService
     }
 
 
-    private function buildAuthorizationUrl(Client $client, ServerRequestInterface $request, string $state): string
+    private function buildAuthorizationUrl(Client $client, ServerRequestInterface $request, string $state, ?string $codeChallenge = null): string
     {
         $provider = $this->providerRegistry->get($client->getProvider());
 
@@ -169,9 +182,13 @@ final class OAuthFlowService
             'state' => $state,
         ])->withHost($request->getUri()->getHost())->withScheme($request->getUri()->getScheme())->__toString();
 
-        return $providerType->buildAuthorizationUrl(client: $client, providerAuthorizationUrl: $provider->authorizationUrl, redirectUri: $redirectUri, state: $state);
-
+        return $providerType->buildAuthorizationUrl(client: $client, providerAuthorizationUrl: $provider->authorizationUrl, redirectUri: $redirectUri, state: $state, codeChallenge: $codeChallenge);
     }
 
+    private function generateCodeChallenge(string $verifier): string
+    {
+        $hash = hash('sha256', $verifier, true);
+        return rtrim(strtr(base64_encode($hash), '+/', '-_'), '=');
+    }
 
 }

@@ -27,6 +27,7 @@ class Connection extends AbstractDomainObject
     protected string $tokenType = '';
     protected ?\DateTimeImmutable $lastRefreshAt = null;
     protected ?\DateTimeImmutable $lastCheckAt = null;
+    protected ?string $codeVerifier = null;
 
 
 
@@ -180,6 +181,14 @@ class Connection extends AbstractDomainObject
         $this->lastCheckAt = $lastCheckAt;
     }
 
+    public function getCodeVerifier(): ?string
+    {
+        return $this->codeVerifier;
+    }
 
+    public function setCodeVerifier(?string $codeVerifier): void
+    {
+        $this->codeVerifier = $codeVerifier;
+    }
 
 }

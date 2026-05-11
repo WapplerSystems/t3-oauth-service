@@ -90,7 +90,6 @@ class OAuthModuleController extends ActionController
             } else {
 
                 $client = new Client();
-                $client->setTitle($oauthClientDefinition->identifier . ' '. date('Y-m-d H:i'));
                 $client->setIsActive(true);
                 $client->setPid(0);
                 $client->setProvider($oauthClientDefinition->identifier);

@@ -107,9 +107,10 @@ final class OAuthFlowService
         $provider = $this->providerRegistry->get($client->getProvider());
         $providerType = $this->providerTypeResolver->resolve($provider->type);
 
-        $redirectUri = $this->backendUriBuilder->buildUriFromRoute('oauthsvc_callback', [
-            'state' => $state,
-        ])->withHost($request->getUri()->getHost())->withScheme($request->getUri()->getScheme())->__toString();
+        $redirectUri = $this->backendUriBuilder->buildUriFromRoute('oauthsvc_callback')
+            ->withHost($request->getUri()->getHost())
+            ->withScheme($request->getUri()->getScheme())
+            ->__toString();
 
         $clientSecretPlain = $this->cryptoService->decrypt($client->getClientSecret()) ?? $client->getClientSecret() ?? '';
 
@@ -146,7 +147,7 @@ final class OAuthFlowService
         // delete state and PKCE verifier
         $conn->setStateHash('');
         $conn->setStateCreatedAt(0);
-        $conn->setCodeVerifier(null);
+        $conn->setCodeVerifier('');
         $this->connectionRepository->update($conn);
         $this->persistenceManager->persistAll();
 
@@ -178,9 +179,10 @@ final class OAuthFlowService
 
         $providerType = $this->providerTypeResolver->resolve($provider->type);
 
-        $redirectUri = $this->backendUriBuilder->buildUriFromRoute('oauthsvc_callback', [
-            'state' => $state,
-        ])->withHost($request->getUri()->getHost())->withScheme($request->getUri()->getScheme())->__toString();
+        $redirectUri = $this->backendUriBuilder->buildUriFromRoute('oauthsvc_callback')
+            ->withHost($request->getUri()->getHost())
+            ->withScheme($request->getUri()->getScheme())
+            ->__toString();
 
         return $providerType->buildAuthorizationUrl(client: $client, providerAuthorizationUrl: $provider->authorizationUrl, redirectUri: $redirectUri, state: $state, codeChallenge: $codeChallenge);
     }

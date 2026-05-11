@@ -29,6 +29,7 @@ final class GenericOAuth2ProviderType implements OAuthProviderTypeInterface
             'response_type' => 'code',
             'client_id' => $client->getClientId(),
             'redirect_uri' => $redirectUri,
+            'state' => $state,
         ];
         if (!empty($scopes)) {
             $params['scope'] = implode(' ', $scopes);

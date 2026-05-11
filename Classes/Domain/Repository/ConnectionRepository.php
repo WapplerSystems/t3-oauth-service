@@ -6,6 +6,7 @@ namespace WapplerSystems\OauthService\Domain\Repository;
 use Doctrine\DBAL\ParameterType;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Extbase\Persistence\Repository;
+use WapplerSystems\OauthService\Domain\Model\Connection;
 
 final class ConnectionRepository extends Repository
 {
@@ -14,6 +15,11 @@ final class ConnectionRepository extends Repository
 
     public function __construct(readonly ConnectionPool $connectionPool) {
         parent::__construct();
+    }
+
+    public function findOneByStateHash(string $stateHash): ?Connection
+    {
+        return $this->findOneBy(['stateHash' => $stateHash]);
     }
 
 

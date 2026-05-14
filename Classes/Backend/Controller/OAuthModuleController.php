@@ -39,16 +39,22 @@ class OAuthModuleController extends ActionController
     {
         $view = $this->moduleTemplateFactory->create($this->request);
 
-        $this->registerDocHeaderButtons($view, $this->request->getAttribute('normalizedParams')->getRequestUri());
+        $normalizedParams = $this->request->getAttribute('normalizedParams');
+        $this->registerDocHeaderButtons($view, $normalizedParams->getRequestUri());
 
 
         $clientDefinitions = $this->clientRegistry->all();
 
         $configuredClients = $this->clientRepository->findAll();
 
+        // Absolute callback URL — must be configured at the OAuth provider as
+        // the allowed redirect URI. Path is fixed by OauthCallbackMiddleware.
+        $callbackUrl = $normalizedParams->getRequestHost() . '/typo3/oauthservice/callback';
+
         $view->assignMultiple([
             'clientDefinitions' => $clientDefinitions,
             'configuredClients' => $configuredClients,
+            'callbackUrl' => $callbackUrl,
             'now' => time(),
         ]);
 

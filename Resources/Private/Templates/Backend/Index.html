@@ -12,6 +12,52 @@
         <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:title"/>
     </h1>
 
+    <f:if condition="{callbackUrl}">
+        <div class="callout callout-info" style="margin-bottom: 18px;">
+            <div class="callout-body">
+                <h4 class="callout-title" style="margin-top: 0;">
+                    <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:info.callbackUrl.title"/>
+                </h4>
+                <p style="margin-bottom: .5rem;">
+                    <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:info.callbackUrl.description"/>
+                </p>
+                <p style="margin-bottom: 0; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;">
+                    <code style="user-select: all; padding: .25rem .5rem; background: rgba(0,0,0,.05); border-radius: 3px;">{callbackUrl}</code>
+                    <button type="button"
+                            class="btn btn-default btn-sm"
+                            data-oauth-copy="{callbackUrl}"
+                            title="{f:translate(key: 'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.copyToClipboard')}">
+                        <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.copyToClipboard"/>
+                    </button>
+                </p>
+                <script>
+                    (function () {
+                        var buttons = document.querySelectorAll('[data-oauth-copy]');
+                        if (!buttons.length || !navigator.clipboard) {
+                            return;
+                        }
+                        buttons.forEach(function (btn) {
+                            var originalText = btn.textContent;
+                            btn.addEventListener('click', function () {
+                                var value = btn.getAttribute('data-oauth-copy') || '';
+                                navigator.clipboard.writeText(value).then(function () {
+                                    btn.textContent = '✓';
+                                    btn.classList.add('btn-success');
+                                    btn.classList.remove('btn-default');
+                                    setTimeout(function () {
+                                        btn.textContent = originalText;
+                                        btn.classList.remove('btn-success');
+                                        btn.classList.add('btn-default');
+                                    }, 1500);
+                                });
+                            });
+                        });
+                    })();
+                </script>
+            </div>
+        </div>
+    </f:if>
+
     <div class="typo3-module-body">
         <f:if condition="{configuredClients -> f:count()}">
             <f:then>

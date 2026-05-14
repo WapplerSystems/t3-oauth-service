@@ -198,6 +198,11 @@
 				<target>Client löschen</target>
 			</trans-unit>
 
+			<trans-unit id="action.copyToClipboard">
+				<source>Copy</source>
+				<target>Kopieren</target>
+			</trans-unit>
+
 			<trans-unit id="connection.defaultLabel">
 				<source>Connection %1$s</source>
 				<target>Verbindung %1$s</target>
@@ -206,6 +211,17 @@
 			<trans-unit id="client.selectLabel">
 				<source>%1$s (%2$s)</source>
 				<target>%1$s (%2$s)</target>
+			</trans-unit>
+
+			<!-- Info -->
+			<trans-unit id="info.callbackUrl.title">
+				<source>Callback URL for OAuth providers</source>
+				<target>Callback-URL für OAuth-Anbieter</target>
+			</trans-unit>
+
+			<trans-unit id="info.callbackUrl.description">
+				<source>Register this URL as the allowed redirect URI in your OAuth provider configuration (Google, Microsoft, etc.). The provider redirects the user back to this address after authorization.</source>
+				<target>Diese URL in der OAuth-Anbieter-Konfiguration (Google, Microsoft etc.) als zulässige Weiterleitungs-URI hinterlegen. Der Anbieter leitet den Nutzer nach erfolgter Autorisierung an diese Adresse zurück.</target>
 			</trans-unit>
 
 			<!-- Messages -->

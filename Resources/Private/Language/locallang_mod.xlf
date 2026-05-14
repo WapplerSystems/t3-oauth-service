@@ -160,12 +160,25 @@
 				<source>Delete client</source>
 			</trans-unit>
 
+			<trans-unit id="action.copyToClipboard">
+				<source>Copy</source>
+			</trans-unit>
+
 			<trans-unit id="connection.defaultLabel">
 				<source>Connection %1$s</source>
 			</trans-unit>
 
 			<trans-unit id="client.selectLabel">
 				<source>%1$s (%2$s)</source>
+			</trans-unit>
+
+			<!-- Info -->
+			<trans-unit id="info.callbackUrl.title">
+				<source>Callback URL for OAuth providers</source>
+			</trans-unit>
+
+			<trans-unit id="info.callbackUrl.description">
+				<source>Register this URL as the allowed redirect URI in your OAuth provider configuration (Google, Microsoft, etc.). The provider redirects the user back to this address after authorization.</source>
 			</trans-unit>
 
 			<!-- Messages -->

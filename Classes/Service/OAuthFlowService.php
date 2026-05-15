@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace WapplerSystems\OauthService\Service;
 
+use GuzzleHttp\Exception\ClientException;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Routing\UriBuilder as BackendUriBuilder;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
@@ -19,13 +20,14 @@ use WapplerSystems\OauthService\Provider\Type\ProviderTypeResolver;
 final class OAuthFlowService
 {
     public function __construct(
-        private readonly ClientRepository     $clientRepository,
-        private readonly ConnectionRepository $connectionRepository,
-        private readonly CryptoService        $cryptoService,
-        private readonly ProviderTypeResolver $providerTypeResolver,
-        private readonly BackendUriBuilder    $backendUriBuilder,
-        protected PersistenceManager          $persistenceManager,
-        protected ProviderRegistry            $providerRegistry,
+        private readonly ClientRepository          $clientRepository,
+        private readonly ConnectionRepository      $connectionRepository,
+        private readonly CryptoService             $cryptoService,
+        private readonly ProviderTypeResolver      $providerTypeResolver,
+        private readonly BackendUriBuilder         $backendUriBuilder,
+        protected PersistenceManager               $persistenceManager,
+        protected ProviderRegistry                 $providerRegistry,
+        private readonly MetadataDiscoveryService  $metadataDiscoveryService,
     )
     {
     }
@@ -121,7 +123,7 @@ final class OAuthFlowService
 
         try {
             $token = $providerType->exchangeCodeForToken($provider, $client, $clientSecretPlain, $code, $redirectUri, $codeVerifier);
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
+        } catch (ClientException $e) {
             $conn->setStatus(Connection::ERROR);
             $conn->setLastErrorCode((string)$e->getCode());
             $conn->setLastErrorMessage($e->getMessage());
@@ -144,6 +146,17 @@ final class OAuthFlowService
         $conn->setLastCheckAt(new \DateTimeImmutable('now'));
         $conn->setLastErrorCode('');
         $conn->setLastErrorMessage('');
+
+        // Store provider metadata if available
+        // Try authenticated metadata first (e.g. Mailchimp), then public discovery (RFC 8414)
+        $metadata = $this->metadataDiscoveryService->fetchAuthenticatedMetadata($provider, (string)$token['access_token']);
+        if (empty($metadata)) {
+            $metadata = $this->metadataDiscoveryService->fetchMetadata($provider);
+        }
+        if (!empty($metadata)) {
+            $conn->setMetadataFromArray($metadata);
+        }
+
         // delete state and PKCE verifier
         $conn->setStateHash('');
         $conn->setStateCreatedAt(0);
@@ -184,7 +197,12 @@ final class OAuthFlowService
             ->withScheme($request->getUri()->getScheme())
             ->__toString();
 
-        return $providerType->buildAuthorizationUrl(client: $client, providerAuthorizationUrl: $provider->authorizationUrl, redirectUri: $redirectUri, state: $state, codeChallenge: $codeChallenge);
+        $authorizationUrl = $this->metadataDiscoveryService->resolveAuthorizationUrl($provider);
+        if ($authorizationUrl === '') {
+            throw new \RuntimeException('No authorization endpoint configured or discoverable for provider: ' . $provider->identifier);
+        }
+
+        return $providerType->buildAuthorizationUrl(client: $client, providerAuthorizationUrl: $authorizationUrl, redirectUri: $redirectUri, state: $state, codeChallenge: $codeChallenge);
     }
 
     private function generateCodeChallenge(string $verifier): string

@@ -74,7 +74,7 @@ final class OAuthClientService
      * Liefert die erste aktive Verbindung für einen Provider mit entschlüsseltem Access-Token.
      * Gibt null zurück, wenn keine aktive Verbindung existiert.
      *
-     * @return array{uid: int, access_token: string, status: string}|null
+     * @return array{uid: int, access_token: string, status: string, metadata: string}|null
      */
     public function getActiveConnectionByProvider(string $provider): ?array
     {
@@ -85,5 +85,33 @@ final class OAuthClientService
 
         $connection['access_token'] = $this->cryptoService->decrypt($connection['access_token']) ?? '';
         return $connection;
+    }
+
+    /**
+     * Returns a specific metadata value from a connection's stored metadata JSON.
+     * Supports dot-notation for nested keys (e.g. 'login.login_email').
+     */
+    public function getConnectionMetadataValue(array $connection, string $key, mixed $default = null): mixed
+    {
+        $metadata = $connection['metadata'] ?? '';
+        if ($metadata === '') {
+            return $default;
+        }
+
+        $data = json_decode($metadata, true);
+        if (!is_array($data)) {
+            return $default;
+        }
+
+        $keys = explode('.', $key);
+        $current = $data;
+        foreach ($keys as $segment) {
+            if (!is_array($current) || !array_key_exists($segment, $current)) {
+                return $default;
+            }
+            $current = $current[$segment];
+        }
+
+        return $current;
     }
 }

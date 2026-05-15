@@ -28,6 +28,7 @@ class Connection extends AbstractDomainObject
     protected ?\DateTimeImmutable $lastRefreshAt = null;
     protected ?\DateTimeImmutable $lastCheckAt = null;
     protected ?string $codeVerifier = null;
+    protected string $metadata = '';
 
 
 
@@ -189,6 +190,33 @@ class Connection extends AbstractDomainObject
     public function setCodeVerifier(?string $codeVerifier): void
     {
         $this->codeVerifier = $codeVerifier;
+    }
+
+    public function getMetadata(): string
+    {
+        return $this->metadata;
+    }
+
+    public function setMetadata(string $metadata): void
+    {
+        $this->metadata = $metadata;
+    }
+
+    /**
+     * Returns the metadata as decoded array, or empty array if not set/invalid.
+     */
+    public function getMetadataArray(): array
+    {
+        if ($this->metadata === '') {
+            return [];
+        }
+        $data = json_decode($this->metadata, true);
+        return is_array($data) ? $data : [];
+    }
+
+    public function setMetadataFromArray(array $metadata): void
+    {
+        $this->metadata = json_encode($metadata, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
     }
 
 }

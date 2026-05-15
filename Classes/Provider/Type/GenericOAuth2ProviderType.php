@@ -10,12 +10,16 @@ use WapplerSystems\OauthService\Domain\Model\Client;
 use WapplerSystems\OauthService\Domain\Model\Connection;
 use WapplerSystems\OauthService\Provider\ProviderDefinition;
 use WapplerSystems\OauthService\Provider\ProviderRegistry;
+use WapplerSystems\OauthService\Service\MetadataDiscoveryService;
 
 #[OAuthProviderType('generic_oauth2')]
 final class GenericOAuth2ProviderType implements OAuthProviderTypeInterface
 {
-    public function __construct(private readonly RequestFactory $requestFactory, private readonly ProviderRegistry $providerRegistry)
-    {
+    public function __construct(
+        private readonly RequestFactory $requestFactory,
+        private readonly ProviderRegistry $providerRegistry,
+        private readonly MetadataDiscoveryService $metadataDiscoveryService,
+    ) {
     }
 
     public function supportsRefresh(): bool
@@ -53,8 +57,14 @@ final class GenericOAuth2ProviderType implements OAuthProviderTypeInterface
         if ($codeVerifier !== null) {
             $formParams['code_verifier'] = $codeVerifier;
         }
+
+        $tokenUrl = $this->metadataDiscoveryService->resolveTokenUrl($providerDefinition);
+        if ($tokenUrl === '') {
+            throw new \RuntimeException('No token endpoint configured or discoverable for provider: ' . $providerDefinition->identifier);
+        }
+
         $response = $this->requestFactory->request(
-            $providerDefinition->tokenUrl,
+            $tokenUrl,
             'POST',
             [
                 'form_params' => $formParams,
@@ -75,7 +85,7 @@ final class GenericOAuth2ProviderType implements OAuthProviderTypeInterface
         $providerKey = $client->getProvider();
         $provider = $this->providerRegistry->get((string)$providerKey);
 
-        $tokenEndpoint = $provider->tokenUrl;
+        $tokenEndpoint = $this->metadataDiscoveryService->resolveTokenUrl($provider);
         if ($tokenEndpoint === '') {
             throw new \RuntimeException('Missing token endpoint for provider: ' . $providerKey);
         }

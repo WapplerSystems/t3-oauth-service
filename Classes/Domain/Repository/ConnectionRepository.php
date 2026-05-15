@@ -86,7 +86,7 @@ final class ConnectionRepository extends Repository
     {
         $qb = $this->connectionPool->getQueryBuilderForTable(self::TABLE);
         $result = $qb
-            ->select('uid', 'access_token', 'status')
+            ->select('uid', 'access_token', 'status', 'metadata')
             ->from(self::TABLE)
             ->where(
                 $qb->expr()->eq('client', $qb->createNamedParameter($clientUid, ParameterType::INTEGER)),
@@ -102,7 +102,7 @@ final class ConnectionRepository extends Repository
     {
         $qb = $this->connectionPool->getQueryBuilderForTable(self::TABLE);
         return $qb
-            ->select('conn.uid', 'conn.access_token', 'conn.status')
+            ->select('conn.uid', 'conn.access_token', 'conn.status', 'conn.metadata')
             ->from(self::TABLE, 'conn')
             ->innerJoin('conn', 'tx_oauthsvc_client', 'client', 'conn.client = client.uid')
             ->where(
@@ -119,7 +119,7 @@ final class ConnectionRepository extends Repository
     {
         $qb = $this->connectionPool->getQueryBuilderForTable(self::TABLE);
         $result = $qb
-            ->select('conn.uid', 'conn.access_token', 'conn.status')
+            ->select('conn.uid', 'conn.access_token', 'conn.status', 'conn.metadata')
             ->from(self::TABLE, 'conn')
             ->innerJoin('conn', 'tx_oauthsvc_client', 'client', 'conn.client = client.uid')
             ->where(

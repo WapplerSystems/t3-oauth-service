@@ -206,6 +206,31 @@
 				<source>Missing required parameters.</source>
 			</trans-unit>
 
+			<trans-unit id="warning.monitor.title">
+				<source>OAuth connection monitor issue</source>
+			</trans-unit>
+			<trans-unit id="warning.monitor.notConfigured">
+				<source>No scheduler task is configured for "oauth-service:monitor-connections". Please add it in the Scheduler module so OAuth tokens are checked regularly.</source>
+			</trans-unit>
+			<trans-unit id="warning.monitor.disabled">
+				<source>The scheduler task for "oauth-service:monitor-connections" is currently disabled. Enable it in the Scheduler module to resume regular checks.</source>
+			</trans-unit>
+			<trans-unit id="warning.monitor.stale">
+				<source>The scheduler task "oauth-service:monitor-connections" last ran on %1$s, more than 48 hours ago. Please verify the scheduler is running.</source>
+			</trans-unit>
+			<trans-unit id="warning.monitor.never">
+				<source>The scheduler task "oauth-service:monitor-connections" is configured but has never executed. Please verify the scheduler is running.</source>
+			</trans-unit>
+			<trans-unit id="warning.monitor.failed">
+				<source>The last execution of "oauth-service:monitor-connections" on %1$s failed and the task has not run successfully since. Please check the failure details below.</source>
+			</trans-unit>
+			<trans-unit id="warning.monitor.failedNever">
+				<source>The scheduler task "oauth-service:monitor-connections" has never run successfully. Please check the failure details below.</source>
+			</trans-unit>
+			<trans-unit id="warning.monitor.lastFailureDetails">
+				<source>Show last failure details</source>
+			</trans-unit>
+
 		</body>
 	</file>
 </xliff>

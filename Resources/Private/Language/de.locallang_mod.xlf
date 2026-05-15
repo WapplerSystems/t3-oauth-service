@@ -255,6 +255,39 @@
 				<target>Erforderliche Parameter fehlen.</target>
 			</trans-unit>
 
+			<trans-unit id="warning.monitor.title">
+				<source>OAuth connection monitor issue</source>
+				<target>Problem mit dem OAuth-Verbindungsmonitor</target>
+			</trans-unit>
+			<trans-unit id="warning.monitor.notConfigured">
+				<source>No scheduler task is configured for "oauth-service:monitor-connections". Please add it in the Scheduler module so OAuth tokens are checked regularly.</source>
+				<target>Für "oauth-service:monitor-connections" ist kein Scheduler-Task angelegt. Bitte im Scheduler-Modul ergänzen, damit OAuth-Tokens regelmäßig geprüft werden.</target>
+			</trans-unit>
+			<trans-unit id="warning.monitor.disabled">
+				<source>The scheduler task for "oauth-service:monitor-connections" is currently disabled. Enable it in the Scheduler module to resume regular checks.</source>
+				<target>Der Scheduler-Task "oauth-service:monitor-connections" ist derzeit deaktiviert. Bitte im Scheduler-Modul aktivieren, damit die Prüfungen weiterlaufen.</target>
+			</trans-unit>
+			<trans-unit id="warning.monitor.stale">
+				<source>The scheduler task "oauth-service:monitor-connections" last ran on %1$s, more than 48 hours ago. Please verify the scheduler is running.</source>
+				<target>Der Scheduler-Task "oauth-service:monitor-connections" lief zuletzt am %1$s und damit vor mehr als 48 Stunden. Bitte prüfen, ob der Scheduler läuft.</target>
+			</trans-unit>
+			<trans-unit id="warning.monitor.never">
+				<source>The scheduler task "oauth-service:monitor-connections" is configured but has never executed. Please verify the scheduler is running.</source>
+				<target>Der Scheduler-Task "oauth-service:monitor-connections" ist konfiguriert, wurde aber noch nie ausgeführt. Bitte prüfen, ob der Scheduler läuft.</target>
+			</trans-unit>
+			<trans-unit id="warning.monitor.failed">
+				<source>The last execution of "oauth-service:monitor-connections" on %1$s failed and the task has not run successfully since. Please check the failure details below.</source>
+				<target>Der letzte Lauf von "oauth-service:monitor-connections" am %1$s ist fehlgeschlagen und seitdem gab es keinen erfolgreichen Lauf. Bitte die Fehlerdetails unten prüfen.</target>
+			</trans-unit>
+			<trans-unit id="warning.monitor.failedNever">
+				<source>The scheduler task "oauth-service:monitor-connections" has never run successfully. Please check the failure details below.</source>
+				<target>Der Scheduler-Task "oauth-service:monitor-connections" lief noch nie erfolgreich. Bitte die Fehlerdetails unten prüfen.</target>
+			</trans-unit>
+			<trans-unit id="warning.monitor.lastFailureDetails">
+				<source>Show last failure details</source>
+				<target>Fehlerdetails anzeigen</target>
+			</trans-unit>
+
 		</body>
 	</file>
 </xliff>

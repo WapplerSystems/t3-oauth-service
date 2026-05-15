@@ -20,6 +20,8 @@ use WapplerSystems\OauthService\Service\NotificationService;
 )]
 final class ConnectionMonitorCommand extends Command
 {
+    public const COMMAND_IDENTIFIER = 'oauth-service:monitor-connections';
+
     public function __construct(
         private readonly ConnectionRepository $connectionRepository,
         private readonly NotificationService $notificationService,

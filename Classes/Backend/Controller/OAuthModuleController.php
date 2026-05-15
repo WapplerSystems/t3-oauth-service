@@ -14,25 +14,28 @@ use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Imaging\IconSize;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
+use WapplerSystems\OauthService\Command\ConnectionMonitorCommand;
 use WapplerSystems\OauthService\Domain\Model\Client;
 use WapplerSystems\OauthService\Domain\Repository\ClientRepository;
 use WapplerSystems\OauthService\Domain\Repository\ConnectionRepository;
 use WapplerSystems\OauthService\Provider\ProviderRegistry;
+use WapplerSystems\OauthService\Service\MonitorTaskStatusService;
 use WapplerSystems\OauthService\Service\OAuthFlowService;
 
 #[AsController]
 class OAuthModuleController extends ActionController
 {
     public function __construct(
-        private readonly ModuleTemplateFactory $moduleTemplateFactory,
-        private readonly ConnectionRepository  $connectionRepository,
-        private readonly ClientRepository      $clientRepository,
-        private readonly OAuthFlowService      $oAuthFlowService,
-        private readonly ProviderRegistry      $clientRegistry,
-        protected IconFactory                  $iconFactory,
-        protected EventDispatcherInterface     $eventDispatcher,
-        protected readonly BackendUriBuilder   $backendUriBuilder,
-        protected PersistenceManager           $persistenceManager,
+        private readonly ModuleTemplateFactory    $moduleTemplateFactory,
+        private readonly ConnectionRepository     $connectionRepository,
+        private readonly ClientRepository         $clientRepository,
+        private readonly OAuthFlowService         $oAuthFlowService,
+        private readonly ProviderRegistry         $clientRegistry,
+        protected IconFactory                     $iconFactory,
+        protected EventDispatcherInterface        $eventDispatcher,
+        protected readonly BackendUriBuilder      $backendUriBuilder,
+        protected PersistenceManager              $persistenceManager,
+        private readonly MonitorTaskStatusService $monitorTaskStatusService,
     ) {}
 
     public function indexAction(): ResponseInterface
@@ -51,11 +54,16 @@ class OAuthModuleController extends ActionController
         // the allowed redirect URI. Path is fixed by OauthCallbackMiddleware.
         $callbackUrl = $normalizedParams->getRequestHost() . '/typo3/oauthservice/callback';
 
+        $monitorStatus = $this->monitorTaskStatusService->getStatus(ConnectionMonitorCommand::COMMAND_IDENTIFIER);
+
         $view->assignMultiple([
             'clientDefinitions' => $clientDefinitions,
             'configuredClients' => $configuredClients,
             'callbackUrl' => $callbackUrl,
             'now' => time(),
+            'monitorState' => $monitorStatus['state'],
+            'monitorLastRun' => $monitorStatus['lastRun'],
+            'monitorLastFailure' => $monitorStatus['lastFailure'],
         ]);
 
         return $this->htmlResponse($view->render('Backend/Index'));

@@ -12,6 +12,7 @@ use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Imaging\IconSize;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 use WapplerSystems\OauthService\Command\ConnectionMonitorCommand;
@@ -126,10 +127,13 @@ class OAuthModuleController extends ActionController
 
         if ($this->request->hasArgument('oauthservice')) {
             $selectedService = $this->request->getArgument('oauthservice');
+            $definition = $this->clientRegistry->get($selectedService);
 
             $view->assignMultiple([
                 'oauthservice' => $selectedService,
                 'formURI' => $formURI,
+                'definition' => $definition,
+                'setupInstructionsHtml' => $this->loadSetupInstructions($definition?->setupInstructionsPath ?? ''),
             ]);
 
             return $this->htmlResponse($view->render('Backend/Wizard/Step1'));
@@ -224,6 +228,28 @@ class OAuthModuleController extends ActionController
             }
         }
         return $this->redirect('index');
+    }
+
+    /**
+     * Loads a provider's setup instructions snippet from the file system.
+     * Accepts EXT:syntax paths. Returns '' when the path is empty or the file
+     * cannot be read — callers must handle that gracefully.
+     */
+    private function loadSetupInstructions(string $path): string
+    {
+        if ($path === '') {
+            return '';
+        }
+        $absolute = GeneralUtility::getFileAbsFileName($path);
+        if ($absolute === '' || !is_file($absolute) || !is_readable($absolute)) {
+            return '';
+        }
+        // Cap at 256 KB to avoid accidental large includes from a misconfigured path.
+        if (filesize($absolute) > 262144) {
+            return '';
+        }
+        $contents = @file_get_contents($absolute);
+        return $contents === false ? '' : $contents;
     }
 
 

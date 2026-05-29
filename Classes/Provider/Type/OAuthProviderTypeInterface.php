@@ -19,4 +19,25 @@ interface OAuthProviderTypeInterface
 
     /** @return array{access_token:string, refresh_token?:string, token_type?:string, expires_in?:int, scope?:string} */
     public function refreshToken(Client $client, Connection $connection, string $refreshToken): array;
+
+    /**
+     * Whether this provider type supports OAuth 2.0 Client Credentials Grant
+     * (service-to-service, no user interaction).
+     */
+    public function supportsClientCredentials(): bool;
+
+    /**
+     * Performs an OAuth 2.0 Client Credentials Grant against the provider's
+     * token endpoint and returns the raw token response.
+     *
+     * @param string[] $scopes
+     * @return array{access_token:string, token_type?:string, expires_in?:int, scope?:string}
+     * @throws \RuntimeException when the flow is not supported or the response is invalid
+     */
+    public function fetchClientCredentialsToken(
+        ProviderDefinition $providerDefinition,
+        Client $client,
+        string $clientSecret,
+        array $scopes = []
+    ): array;
 }

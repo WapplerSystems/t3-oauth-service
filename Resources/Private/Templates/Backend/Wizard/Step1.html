@@ -10,8 +10,33 @@
 <f:section name="Content">
     <h1>
         <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:title"/>
+        <f:if condition="{definition.title}">
+            <small class="text-muted ms-2">{definition.title}</small>
+        </f:if>
     </h1>
 
+    <f:if condition="{definition.setupGuideUrl}">
+        <div class="callout callout-info mb-3">
+            <p class="mb-2">
+                Bitte öffne die Admin-Konsole des Providers, lege dort einen OAuth-Client an
+                und kopiere anschließend Client&nbsp;ID und Client&nbsp;Secret hierher.
+            </p>
+            <a href="{definition.setupGuideUrl}" target="_blank" rel="noopener noreferrer"
+               class="btn btn-default btn-sm">
+                <core:icon identifier="actions-window-open" size="small" />
+                Provider-Konsole öffnen
+            </a>
+        </div>
+    </f:if>
+
+    <f:if condition="{setupInstructionsHtml}">
+        <div class="card mb-3">
+            <div class="card-header">Setup-Anleitung</div>
+            <div class="card-body oauth-setup-instructions">
+                <f:format.raw>{setupInstructionsHtml}</f:format.raw>
+            </div>
+        </div>
+    </f:if>
 
     <form action="{formURI}" method="get" target="_top">
 
@@ -19,11 +44,11 @@
 
         <div class="form-group">
             <label for="clientId" class="form-label">Client ID</label>
-            <f:form.textfield id="clientId" name="clientId" class="form-control" />
+            <f:form.textfield id="clientId" name="clientId" class="form-control" required="required" autocomplete="off" />
         </div>
         <div class="form-group">
             <label for="clientSecret" class="form-label">Client Secret</label>
-            <f:form.textfield id="clientSecret" name="clientSecret" class="form-control" />
+            <f:form.textfield id="clientSecret" name="clientSecret" class="form-control" required="required" autocomplete="off" />
         </div>
 
 

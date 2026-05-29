@@ -26,3 +26,6 @@ services:
     public: true
     arguments:
       $cache: '@cache.hash'
+
+  WapplerSystems\OauthService\Service\TokenAcquisitionService:
+    public: true

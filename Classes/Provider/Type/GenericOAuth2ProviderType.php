@@ -105,4 +105,40 @@ final class GenericOAuth2ProviderType implements OAuthProviderTypeInterface
         }
         return $data;
     }
+
+    public function supportsClientCredentials(): bool
+    {
+        return true;
+    }
+
+    public function fetchClientCredentialsToken(
+        ProviderDefinition $providerDefinition,
+        Client $client,
+        string $clientSecret,
+        array $scopes = []
+    ): array {
+        $tokenUrl = $this->metadataDiscoveryService->resolveTokenUrl($providerDefinition);
+        if ($tokenUrl === '') {
+            throw new \RuntimeException('No token endpoint configured or discoverable for provider: ' . $providerDefinition->identifier);
+        }
+
+        $formParams = [
+            'grant_type'    => 'client_credentials',
+            'client_id'     => $client->getClientId(),
+            'client_secret' => $clientSecret,
+        ];
+        if ($scopes !== []) {
+            $formParams['scope'] = implode(' ', $scopes);
+        }
+
+        $response = $this->requestFactory->request($tokenUrl, 'POST', [
+            'form_params' => $formParams,
+            'timeout' => 10,
+        ]);
+        $data = json_decode($response->getBody()->getContents(), true);
+        if (!is_array($data) || empty($data['access_token'])) {
+            throw new \RuntimeException('Invalid token response from provider');
+        }
+        return $data;
+    }
 }

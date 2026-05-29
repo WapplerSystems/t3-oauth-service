@@ -14,6 +14,20 @@ final readonly class ProviderDefinition
         public array  $defaultScopes = [],
         public string $metadataUrl = '',
         public string $issuer = '',
+        /**
+         * Optional external URL the admin must open to register an OAuth client
+         * with the provider (e.g. Keycloak admin console, Google Cloud Console).
+         * Rendered as a button on the wizard's "Enter Client ID / Secret" step.
+         */
+        public string $setupGuideUrl = '',
+        /**
+         * Optional path to an HTML snippet whose content is rendered above the
+         * Client ID / Secret form on the wizard. Use EXT:syntax, e.g.:
+         *   EXT:linear_keycloak_manager/Resources/Private/SetupInstructions/keycloak_admin.html
+         * The snippet is rendered as-is (f:format.raw), so the providing
+         * extension is responsible for safe HTML.
+         */
+        public string $setupInstructionsPath = '',
     ) {}
 
     /**

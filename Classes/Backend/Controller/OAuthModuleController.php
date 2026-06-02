@@ -52,8 +52,13 @@ class OAuthModuleController extends ActionController
         $configuredClients = $this->clientRepository->findAll();
 
         // Absolute callback URL — must be configured at the OAuth provider as
-        // the allowed redirect URI. Path is fixed by OauthCallbackMiddleware.
-        $callbackUrl = $normalizedParams->getRequestHost() . '/typo3/oauthservice/callback';
+        // the allowed redirect URI. Derived from the backend entry point so it
+        // adapts to a customized $GLOBALS['TYPO3_CONF_VARS']['BE']['entryPoint'].
+        $callbackUrl = (string)$this->backendUriBuilder->buildUriFromRoute(
+            'oauthsvc_callback',
+            [],
+            BackendUriBuilder::ABSOLUTE_URL
+        );
 
         $monitorStatus = $this->monitorTaskStatusService->getStatus(ConnectionMonitorCommand::COMMAND_IDENTIFIER);
 

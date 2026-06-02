@@ -11,14 +11,16 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use TYPO3\CMS\Backend\Routing\UriBuilder as BackendUriBuilder;
 use TYPO3\CMS\Core\Http\HtmlResponse;
+use TYPO3\CMS\Core\Routing\BackendEntryPointResolver;
 use WapplerSystems\OauthService\Service\OAuthFlowService;
 
 final class OauthCallbackMiddleware implements MiddlewareInterface
 {
 
     public function __construct(
-        private readonly OAuthFlowService  $flowService,
-        private readonly BackendUriBuilder $backendUriBuilder,
+        private readonly OAuthFlowService          $flowService,
+        private readonly BackendUriBuilder         $backendUriBuilder,
+        private readonly BackendEntryPointResolver $backendEntryPointResolver,
     )
     {
     }
@@ -27,8 +29,11 @@ final class OauthCallbackMiddleware implements MiddlewareInterface
     {
         $path = $request->getUri()->getPath();
 
-        // Nur unsere Callback-URL abfangen, alles andere normal weiterreichen
-        if ($path !== '/typo3/oauthservice/callback') {
+        // Nur unsere Callback-URL abfangen, alles andere normal weiterreichen.
+        // Der Backend-Entry-Point ist konfigurierbar (TYPO3_CONF_VARS/BE/entryPoint),
+        // daher wird der Pfad relativ zum Entry Point gebildet.
+        $callbackPath = $this->backendEntryPointResolver->getPathFromRequest($request) . 'oauthservice/callback';
+        if ($path !== $callbackPath) {
             return $handler->handle($request);
         }
 

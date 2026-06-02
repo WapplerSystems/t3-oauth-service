@@ -16,6 +16,7 @@ class Client extends AbstractDomainObject {
     protected bool $isActive = false;
     protected string $scopes;
     protected ?string $notifyEmail = null;
+    protected ?string $metadata = null;
 
 
     /**
@@ -86,6 +87,42 @@ class Client extends AbstractDomainObject {
     public function setNotifyEmail(?string $notifyEmail): void
     {
         $this->notifyEmail = $notifyEmail;
+    }
+
+    public function getMetadata(): ?string
+    {
+        return $this->metadata;
+    }
+
+    public function setMetadata(?string $metadata): void
+    {
+        $this->metadata = $metadata;
+    }
+
+    /**
+     * Returns a specific value from the metadata JSON, with dot-notation support.
+     */
+    public function getMetadataValue(string $key, mixed $default = null): mixed
+    {
+        $raw = $this->metadata ?? '';
+        if ($raw === '') {
+            return $default;
+        }
+
+        $data = json_decode($raw, true);
+        if (!is_array($data)) {
+            return $default;
+        }
+
+        $current = $data;
+        foreach (explode('.', $key) as $segment) {
+            if (!is_array($current) || !array_key_exists($segment, $current)) {
+                return $default;
+            }
+            $current = $current[$segment];
+        }
+
+        return $current;
     }
 
     public function getConnections(): ObjectStorage

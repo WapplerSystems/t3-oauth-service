@@ -62,6 +62,14 @@
 				<source>Notification email</source>
 			</trans-unit>
 
+			<trans-unit id="client.metadata">
+				<source>Metadata (JSON)</source>
+			</trans-unit>
+
+			<trans-unit id="client.metadata.description">
+				<source>Optional JSON object with provider-specific configuration that lives next to the credentials. Consumer extensions read individual keys via OAuthClientService.</source>
+			</trans-unit>
+
 			<trans-unit id="client.callbackRoute">
 				<source>Callback route</source>
 			</trans-unit>

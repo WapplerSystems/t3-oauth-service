@@ -93,19 +93,71 @@ final class OAuthClientService
      */
     public function getConnectionMetadataValue(array $connection, string $key, mixed $default = null): mixed
     {
-        $metadata = $connection['metadata'] ?? '';
-        if ($metadata === '') {
+        return $this->readMetadataValue($connection['metadata'] ?? '', $key, $default);
+    }
+
+    /**
+     * Returns the metadata JSON of the active client for the given provider as a
+     * decoded array. Use when consumer extensions need static client-side
+     * configuration (e.g. tenant id, sender identifier) alongside the OAuth
+     * credentials. Returns an empty array if no active client exists or the
+     * metadata column is empty / not valid JSON.
+     *
+     * @return array<string, mixed>
+     */
+    public function getActiveClientMetadataByProvider(string $provider): array
+    {
+        $qb = $this->connectionPool->getQueryBuilderForTable(self::CLIENT_TABLE);
+        $row = $qb
+            ->select('metadata')
+            ->from(self::CLIENT_TABLE)
+            ->where(
+                $qb->expr()->eq('provider', $qb->createNamedParameter($provider)),
+                $qb->expr()->eq('is_active', $qb->createNamedParameter(1, ParameterType::INTEGER))
+            )
+            ->orderBy('uid', 'ASC')
+            ->setMaxResults(1)
+            ->executeQuery()
+            ->fetchAssociative();
+
+        if (!is_array($row) || ($row['metadata'] ?? '') === '') {
+            return [];
+        }
+
+        $decoded = json_decode((string)$row['metadata'], true);
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    /**
+     * Returns a single value from the active client's metadata JSON for the
+     * given provider, with dot-notation for nested keys.
+     */
+    public function getActiveClientMetadataValueByProvider(string $provider, string $key, mixed $default = null): mixed
+    {
+        return $this->lookupMetadataKey($this->getActiveClientMetadataByProvider($provider), $key, $default);
+    }
+
+    private function readMetadataValue(string $rawJson, string $key, mixed $default): mixed
+    {
+        if ($rawJson === '') {
             return $default;
         }
 
-        $data = json_decode($metadata, true);
+        $data = json_decode($rawJson, true);
         if (!is_array($data)) {
             return $default;
         }
 
-        $keys = explode('.', $key);
+        return $this->lookupMetadataKey($data, $key, $default);
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function lookupMetadataKey(array $data, string $key, mixed $default): mixed
+    {
         $current = $data;
-        foreach ($keys as $segment) {
+        foreach (explode('.', $key) as $segment) {
             if (!is_array($current) || !array_key_exists($segment, $current)) {
                 return $default;
             }

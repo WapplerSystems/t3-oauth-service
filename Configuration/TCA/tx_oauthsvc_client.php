@@ -36,6 +36,8 @@ return [
                     scopes,
                 --div--;Monitoring,
                     notify_email,
+                --div--;Metadata,
+                    metadata,
                 --div--;Connections,
                     connections,
             ',
@@ -110,6 +112,16 @@ return [
                 'type' => 'input',
                 'size' => 60,
                 'eval' => 'trim,email',
+            ],
+        ],
+
+        'metadata' => [
+            'label' => 'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:client.metadata',
+            'description' => 'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:client.metadata.description',
+            'config' => [
+                'type' => 'json',
+                'cols' => 60,
+                'rows' => 8,
             ],
         ],
 

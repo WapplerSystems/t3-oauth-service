@@ -150,13 +150,24 @@
 
                                     <div class="col-md-6">
                                         <div class="btn-toolbar" role="toolbar" style="margin-top: 4px;">
-                                            <f:if condition="{client.connections -> f:count()} == 0">
+                                            <f:if condition="{clientCapabilities.{client.uid}.authorizationCode} && {client.connections -> f:count()} == 0">
                                                 <div class="btn-group" role="group">
                                                     <f:link.action
                                                         action="connect"
                                                         arguments="{client: client.uid}"
                                                         class="btn btn-primary">
                                                         <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.connect"/>
+                                                    </f:link.action>
+                                                </div>
+                                            </f:if>
+                                            <f:if condition="{clientCapabilities.{client.uid}.clientCredentials}">
+                                                <div class="btn-group" role="group" style="margin-left: 6px;">
+                                                    <f:link.action
+                                                        action="fetchToken"
+                                                        arguments="{client: client.uid}"
+                                                        class="btn btn-default"
+                                                        title="{f:translate(key: 'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.fetchToken.description')}">
+                                                        <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.fetchToken"/>
                                                     </f:link.action>
                                                 </div>
                                             </f:if>

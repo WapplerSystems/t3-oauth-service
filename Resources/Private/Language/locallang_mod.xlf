@@ -144,6 +144,14 @@
 				<source>Connect</source>
 			</trans-unit>
 
+			<trans-unit id="action.fetchToken">
+				<source>Fetch token (app-only)</source>
+			</trans-unit>
+
+			<trans-unit id="action.fetchToken.description">
+				<source>Acquires a fresh OAuth 2.0 client_credentials access token for this client without any user redirect. Use to verify credentials and admin-consent for service-to-service flows.</source>
+			</trans-unit>
+
 			<trans-unit id="action.reconnect">
 				<source>Reconnect</source>
 			</trans-unit>

@@ -20,8 +20,10 @@ use WapplerSystems\OauthService\Domain\Model\Client;
 use WapplerSystems\OauthService\Domain\Repository\ClientRepository;
 use WapplerSystems\OauthService\Domain\Repository\ConnectionRepository;
 use WapplerSystems\OauthService\Provider\ProviderRegistry;
+use WapplerSystems\OauthService\Provider\Type\ProviderTypeResolver;
 use WapplerSystems\OauthService\Service\MonitorTaskStatusService;
 use WapplerSystems\OauthService\Service\OAuthFlowService;
+use WapplerSystems\OauthService\Service\TokenAcquisitionService;
 
 #[AsController]
 class OAuthModuleController extends ActionController
@@ -37,6 +39,8 @@ class OAuthModuleController extends ActionController
         protected readonly BackendUriBuilder      $backendUriBuilder,
         protected PersistenceManager              $persistenceManager,
         private readonly MonitorTaskStatusService $monitorTaskStatusService,
+        private readonly ProviderTypeResolver     $providerTypeResolver,
+        private readonly TokenAcquisitionService  $tokenAcquisitionService,
     ) {}
 
     public function indexAction(): ResponseInterface
@@ -62,9 +66,17 @@ class OAuthModuleController extends ActionController
 
         $monitorStatus = $this->monitorTaskStatusService->getStatus(ConnectionMonitorCommand::COMMAND_IDENTIFIER);
 
+        // Pre-compute which OAuth flows each configured client's provider type supports
+        // so the template can show the appropriate action button(s).
+        $clientCapabilities = [];
+        foreach ($configuredClients as $client) {
+            $clientCapabilities[(int)$client->getUid()] = $this->resolveClientCapabilities($client);
+        }
+
         $view->assignMultiple([
             'clientDefinitions' => $clientDefinitions,
             'configuredClients' => $configuredClients,
+            'clientCapabilities' => $clientCapabilities,
             'callbackUrl' => $callbackUrl,
             'now' => time(),
             'monitorState' => $monitorStatus['state'],
@@ -210,6 +222,56 @@ class OAuthModuleController extends ActionController
         return $moduleTemplate->renderResponse('Backend/Connect');
     }
 
+    /**
+     * Fetches an OAuth 2.0 client_credentials access token for the given client
+     * (no user redirect, service-to-service). Used by providers that issue
+     * tokens directly to a registered app rather than via the
+     * Authorization-Code Flow with PKCE.
+     */
+    public function fetchTokenAction(): ResponseInterface
+    {
+        $clientUid = (int)($this->request->getArgument('client') ?? 0);
+        if ($clientUid <= 0) {
+            $this->addFlashMessage('Invalid client', 'OAuth Service', \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR);
+            return $this->redirect('index');
+        }
+
+        $client = $this->clientRepository->findByUid($clientUid);
+        if ($client === null) {
+            $this->addFlashMessage(sprintf('Client #%d not found', $clientUid), 'OAuth Service', \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR);
+            return $this->redirect('index');
+        }
+
+        $providerIdentifier = (string)$client->getProvider();
+        try {
+            $this->tokenAcquisitionService->invalidate($providerIdentifier);
+            $token = $this->tokenAcquisitionService->getClientCredentialsToken($providerIdentifier);
+        } catch (\Throwable $e) {
+            $this->addFlashMessage(
+                sprintf('Token acquisition failed: %s', $e->getMessage()),
+                'OAuth Service',
+                \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR
+            );
+            return $this->redirect('index');
+        }
+
+        if ($token === null || $token === '') {
+            $this->addFlashMessage(
+                'No access token returned. Check client_id, client_secret and admin-consent.',
+                'OAuth Service',
+                \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR
+            );
+            return $this->redirect('index');
+        }
+
+        $this->addFlashMessage(
+            sprintf('Access token acquired for provider "%s" (%d chars).', $providerIdentifier, strlen($token)),
+            'OAuth Service',
+            \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::OK
+        );
+        return $this->redirect('index');
+    }
+
     public function disconnectAction(): ResponseInterface
     {
         $connectionUid = (int)($this->request->getArgument('connection') ?? 0);
@@ -233,6 +295,39 @@ class OAuthModuleController extends ActionController
             }
         }
         return $this->redirect('index');
+    }
+
+    /**
+     * Resolves which OAuth flows the given client's provider supports.
+     * Returns capability flags consumed by the template to render the
+     * appropriate action buttons.
+     *
+     * @return array{clientCredentials: bool, authorizationCode: bool}
+     */
+    private function resolveClientCapabilities(Client $client): array
+    {
+        $default = ['clientCredentials' => false, 'authorizationCode' => true];
+
+        $providerIdentifier = (string)$client->getProvider();
+        if ($providerIdentifier === '') {
+            return $default;
+        }
+
+        $definition = $this->clientRegistry->get($providerIdentifier);
+        if ($definition === null) {
+            return $default;
+        }
+
+        try {
+            $type = $this->providerTypeResolver->resolve($definition->type);
+        } catch (\Throwable) {
+            return $default;
+        }
+
+        return [
+            'clientCredentials' => $type->supportsClientCredentials(),
+            'authorizationCode' => $type->supportsRefresh(),
+        ];
     }
 
     /**

@@ -11,7 +11,7 @@ return [
         'extensionName' => 'OauthService',
         'controllerActions' => [
             \WapplerSystems\OauthService\Backend\Controller\OAuthModuleController::class => [
-                'index', 'wizard', 'connect', 'reconnect', 'disconnect', 'deleteClient'
+                'index', 'wizard', 'connect', 'reconnect', 'disconnect', 'deleteClient', 'fetchToken'
             ],
         ],
     ],

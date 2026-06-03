@@ -161,11 +161,15 @@
                                                 </div>
                                             </f:if>
                                             <f:if condition="{clientCapabilities.{client.uid}.clientCredentials}">
+                                                <f:variable name="fetchTokenButtonClass" value="btn btn-default" />
+                                                <f:if condition="{clientCapabilities.{client.uid}.prefersClientCredentials}">
+                                                    <f:variable name="fetchTokenButtonClass" value="btn btn-primary" />
+                                                </f:if>
                                                 <div class="btn-group" role="group" style="margin-left: 6px;">
                                                     <f:link.action
                                                         action="fetchToken"
                                                         arguments="{client: client.uid}"
-                                                        class="btn {f:if(condition: clientCapabilities.{client.uid}.prefersClientCredentials, then: 'btn-primary', else: 'btn-default')}"
+                                                        class="{fetchTokenButtonClass}"
                                                         title="{f:translate(key: 'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.fetchToken.description')}">
                                                         <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.fetchToken"/>
                                                     </f:link.action>

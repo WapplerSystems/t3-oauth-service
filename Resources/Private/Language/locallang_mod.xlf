@@ -176,6 +176,22 @@
 				<source>Roles:</source>
 			</trans-unit>
 
+			<trans-unit id="connect.intro">
+				<source>The OAuth client has been saved. The next step is to authorize it against the provider — you will be redirected to the provider's login page where you sign in (or are already signed in) and confirm the requested permissions. After the redirect back, this OAuth client will have an active connection that the system can refresh in the background.</source>
+			</trans-unit>
+
+			<trans-unit id="connect.button">
+				<source>Authorize at provider</source>
+			</trans-unit>
+
+			<trans-unit id="connect.hint.title">
+				<source>What happens when I click "Authorize at provider"?</source>
+			</trans-unit>
+
+			<trans-unit id="connect.hint.body">
+				<source>Your browser opens the provider's authorize endpoint with a unique state parameter (CSRF protection) and a PKCE challenge. The provider asks you to log in and grant the configured scopes. On success the provider redirects back to this TYPO3 backend, the callback endpoint exchanges the authorization code for an access token + refresh token, and the connection appears as "Connected" in the overview.</source>
+			</trans-unit>
+
 			<trans-unit id="action.reconnect">
 				<source>Reconnect</source>
 			</trans-unit>

@@ -1,11 +1,44 @@
-<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
-      data-namespace-typo3-fluid="true">
-<f:layout name="Module" />
+<html
+    xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+    data-namespace-typo3-fluid="true"
+>
+
+<f:layout name="Module"/>
 
 <f:section name="Content">
-    <h1>OAuth</h1>
+    <h1>
+        <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:title"/>
+        <f:if condition="{definition.title}">
+            <small class="text-muted ms-2">{definition.title}</small>
+        </f:if>
+    </h1>
 
-    <a href="{authorizeUrl -> f:format.raw()}" target="_top">Zum Verbinden hier klicken</a>
+    <div class="callout callout-info mb-3">
+        <p class="mb-0">
+            <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:connect.intro"/>
+        </p>
+    </div>
+
+    <p>
+        <a href="{authorizeUrl -> f:format.raw()}" target="_top" class="btn btn-primary btn-lg">
+            <core:icon identifier="actions-window-open" size="small" />
+            <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:connect.button"/>
+        </a>
+        &nbsp;
+        <f:link.action action="index" class="btn btn-default">
+            <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.cancel"/>
+        </f:link.action>
+    </p>
+
+    <p class="text-muted" style="font-size: 12px; margin-top: 16px;">
+        <strong>
+            <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:connect.hint.title"/>
+        </strong>
+        <br/>
+        <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:connect.hint.body"/>
+    </p>
 
 </f:section>
+
 </html>

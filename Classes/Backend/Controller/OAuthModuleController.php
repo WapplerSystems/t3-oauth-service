@@ -190,16 +190,19 @@ class OAuthModuleController extends ActionController
 
             $this->persistenceManager->persistAll();
 
-            // Branch on flow capability: client_credentials providers need a metadata
-            // step (e.g. Microsoft Graph tenant_id / sender_upn); authorization_code
-            // providers redirect straight to the connect-to-provider screen.
+            // Branch on flow preference, not raw capability: providers that
+            // technically support client_credentials but are deployed in the
+            // authorization-code mode (e.g. CleverReach) skip the metadata
+            // step and go straight to the connect-to-provider screen, exactly
+            // like the original wizard behavior. Only providers that flag
+            // themselves as prefersClientCredentials() get Step 2.
             try {
                 $providerType = $this->providerTypeResolver->resolve($oauthClientDefinition->type);
             } catch (\Throwable) {
                 $providerType = null;
             }
 
-            if ($providerType !== null && $providerType->supportsClientCredentials()) {
+            if ($providerType !== null && $providerType->prefersClientCredentials()) {
                 $view->assignMultiple([
                     'formURI' => $formURI,
                     'definition' => $oauthClientDefinition,
@@ -277,10 +280,14 @@ class OAuthModuleController extends ActionController
         $moduleTemplate = $this->moduleTemplateFactory->create($this->request);
 
         $clientUid = (int)($this->request->getArgument('client') ?? 0);
+        $client = $clientUid > 0 ? $this->clientRepository->findByUid($clientUid) : null;
+        $definition = $client !== null ? $this->clientRegistry->get((string)$client->getProvider()) : null;
         $authUrl = $this->oAuthFlowService->startAuthorization($clientUid, $this->request, null, null);
 
         $moduleTemplate->assignMultiple([
             'authorizeUrl' => $authUrl,
+            'client' => $client,
+            'definition' => $definition,
         ]);
         return $moduleTemplate->renderResponse('Backend/Connect');
 

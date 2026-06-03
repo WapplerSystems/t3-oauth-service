@@ -70,6 +70,14 @@
 				<source>Optional JSON object with provider-specific configuration that lives next to the credentials. Consumer extensions read individual keys via OAuthClientService.</source>
 			</trans-unit>
 
+			<trans-unit id="client.metadata.empty">
+				<source>not set</source>
+			</trans-unit>
+
+			<trans-unit id="client.metadata.emptyDescription">
+				<source>No metadata stored for this client. Edit the client row to add a JSON object — e.g. {"tenant_id":"…","sender_upn":"…"} for Microsoft Graph.</source>
+			</trans-unit>
+
 			<trans-unit id="client.callbackRoute">
 				<source>Callback route</source>
 			</trans-unit>

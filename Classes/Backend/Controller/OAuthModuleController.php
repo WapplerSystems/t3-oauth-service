@@ -70,16 +70,21 @@ class OAuthModuleController extends ActionController
         $monitorStatus = $this->monitorTaskStatusService->getStatus(ConnectionMonitorCommand::COMMAND_IDENTIFIER);
 
         // Pre-compute which OAuth flows each configured client's provider type supports
-        // so the template can show the appropriate action button(s).
+        // so the template can show the appropriate action button(s), and a
+        // pretty-printed metadata JSON for inline display.
         $clientCapabilities = [];
+        $clientMetadataFormatted = [];
         foreach ($configuredClients as $client) {
-            $clientCapabilities[(int)$client->getUid()] = $this->resolveClientCapabilities($client);
+            $uid = (int)$client->getUid();
+            $clientCapabilities[$uid] = $this->resolveClientCapabilities($client);
+            $clientMetadataFormatted[$uid] = $this->formatClientMetadata((string)($client->getMetadata() ?? ''));
         }
 
         $view->assignMultiple([
             'clientDefinitions' => $clientDefinitions,
             'configuredClients' => $configuredClients,
             'clientCapabilities' => $clientCapabilities,
+            'clientMetadataFormatted' => $clientMetadataFormatted,
             'callbackUrl' => $callbackUrl,
             'now' => time(),
             'monitorState' => $monitorStatus['state'],
@@ -413,6 +418,23 @@ class OAuthModuleController extends ActionController
             'clientCredentials' => $type->supportsClientCredentials(),
             'authorizationCode' => $type->supportsRefresh(),
         ];
+    }
+
+    /**
+     * Pretty-prints the metadata JSON of a client for inline display. Returns
+     * an empty string when no metadata is set, the literal raw value when it
+     * is not valid JSON (so the operator still sees what is in the column).
+     */
+    private function formatClientMetadata(string $rawJson): string
+    {
+        if ($rawJson === '') {
+            return '';
+        }
+        $decoded = json_decode($rawJson, true);
+        if (!is_array($decoded)) {
+            return $rawJson;
+        }
+        return (string)json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
     /**

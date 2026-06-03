@@ -29,3 +29,6 @@ services:
 
   WapplerSystems\OauthService\Service\TokenAcquisitionService:
     public: true
+
+  WapplerSystems\OauthService\Service\OAuthClientService:
+    public: true

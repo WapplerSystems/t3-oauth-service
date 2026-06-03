@@ -96,6 +96,49 @@ class OAuthModuleController extends ActionController
             'oauthservice.OAuthModule_wizard'
         );
 
+        // Step 3 (finalize): user submitted the Metadata step. Update the client's
+        // metadata JSON and redirect to fetchTokenAction so the credentials are
+        // verified end-to-end immediately after registration.
+        if ($this->request->hasArgument('finalize') && $this->request->hasArgument('client')) {
+            $clientUid = (int)$this->request->getArgument('client');
+            $client = $clientUid > 0 ? $this->clientRepository->findByUid($clientUid) : null;
+            if ($client === null) {
+                throw new \RuntimeException('OAuth client not found: ' . $clientUid, 1717372001);
+            }
+
+            $metadataRaw = trim((string)($this->request->hasArgument('metadata') ? $this->request->getArgument('metadata') : ''));
+            $metadataError = null;
+            if ($metadataRaw !== '') {
+                $decoded = json_decode($metadataRaw, true);
+                if (!is_array($decoded)) {
+                    $metadataError = (string)(json_last_error_msg() ?: 'Invalid JSON');
+                }
+            }
+
+            if ($metadataError !== null) {
+                $definition = $this->clientRegistry->get((string)$client->getProvider());
+                $view->assignMultiple([
+                    'formURI' => $formURI,
+                    'definition' => $definition,
+                    'client' => $client,
+                    'metadata' => $metadataRaw,
+                    'metadataError' => $metadataError,
+                ]);
+                return $this->htmlResponse($view->render('Backend/Wizard/Step2'));
+            }
+
+            $client->setMetadata($metadataRaw === '' ? null : $metadataRaw);
+            $this->clientRepository->update($client);
+            $this->persistenceManager->persistAll();
+
+            return $this->redirectToUri(
+                $this->backendUriBuilder->buildUriFromRoute(
+                    'oauthservice.OAuthModule_fetchToken',
+                    ['client' => $client->getUid()]
+                )
+            );
+        }
+
         if ($this->request->hasArgument('oauthservice') && $this->request->hasArgument('clientId') && $this->request->hasArgument('clientSecret')) {
 
             $selectedService = $this->request->getArgument('oauthservice');
@@ -131,6 +174,26 @@ class OAuthModuleController extends ActionController
             }
 
             $this->persistenceManager->persistAll();
+
+            // Branch on flow capability: client_credentials providers need a metadata
+            // step (e.g. Microsoft Graph tenant_id / sender_upn); authorization_code
+            // providers redirect straight to the connect-to-provider screen.
+            try {
+                $providerType = $this->providerTypeResolver->resolve($oauthClientDefinition->type);
+            } catch (\Throwable) {
+                $providerType = null;
+            }
+
+            if ($providerType !== null && $providerType->supportsClientCredentials()) {
+                $view->assignMultiple([
+                    'formURI' => $formURI,
+                    'definition' => $oauthClientDefinition,
+                    'client' => $client,
+                    'metadata' => (string)($client->getMetadata() ?? ''),
+                    'metadataError' => null,
+                ]);
+                return $this->htmlResponse($view->render('Backend/Wizard/Step2'));
+            }
 
             $backendUri = $this->backendUriBuilder->buildUriFromRoute(
                 'oauthservice.OAuthModule_connect',

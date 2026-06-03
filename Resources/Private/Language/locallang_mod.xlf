@@ -168,6 +168,26 @@
 				<source>Save</source>
 			</trans-unit>
 
+			<trans-unit id="wizard.metadata.label">
+				<source>Metadata (JSON)</source>
+			</trans-unit>
+
+			<trans-unit id="wizard.metadata.help">
+				<source>This provider supports the OAuth 2.0 client_credentials flow. Enter any provider-specific parameters here as a JSON object — for example tenant_id and sender_upn for Microsoft Graph. Leave empty if the provider needs no extra configuration.</source>
+			</trans-unit>
+
+			<trans-unit id="wizard.metadata.setupGuide">
+				<source>Open the provider's setup guide</source>
+			</trans-unit>
+
+			<trans-unit id="wizard.metadata.hint">
+				<source>Must be valid JSON or empty. Consumer extensions read individual keys via OAuthClientService.</source>
+			</trans-unit>
+
+			<trans-unit id="wizard.metadata.invalidJson">
+				<source>The JSON could not be parsed:</source>
+			</trans-unit>
+
 			<trans-unit id="action.cancel">
 				<source>Cancel</source>
 			</trans-unit>

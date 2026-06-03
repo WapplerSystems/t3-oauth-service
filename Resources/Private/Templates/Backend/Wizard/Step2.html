@@ -1,0 +1,75 @@
+<html
+    xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    xmlns:be="http://typo3.org/ns/TYPO3/CMS/Backend/ViewHelpers"
+    xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+    data-namespace-typo3-fluid="true"
+>
+
+<f:layout name="Module"/>
+
+<f:section name="Content">
+    <h1>
+        <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:title"/>
+        <f:if condition="{definition.title}">
+            <small class="text-muted ms-2">{definition.title}</small>
+        </f:if>
+    </h1>
+
+    <div class="callout callout-info mb-3">
+        <p class="mb-0">
+            <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:wizard.metadata.help"/>
+            <f:if condition="{definition.setupGuideUrl}">
+                &nbsp;
+                <a href="{definition.setupGuideUrl}" target="_blank" rel="noopener noreferrer">
+                    <core:icon identifier="actions-window-open" size="small" />
+                    <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:wizard.metadata.setupGuide"/>
+                </a>
+            </f:if>
+        </p>
+    </div>
+
+    <f:if condition="{metadataError}">
+        <div class="callout callout-danger mb-3">
+            <strong>
+                <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:wizard.metadata.invalidJson"/>
+            </strong>
+            <br/>
+            <code>{metadataError}</code>
+        </div>
+    </f:if>
+
+    <form action="{formURI}" method="post" target="_top">
+
+        <f:form.hidden name="client" value="{client.uid}" />
+        <f:form.hidden name="finalize" value="1" />
+
+        <div class="form-group">
+            <label for="metadata" class="form-label">
+                <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:wizard.metadata.label"/>
+            </label>
+            <f:form.textarea
+                id="metadata"
+                name="metadata"
+                class="form-control font-monospace"
+                rows="10"
+                spellcheck="false"
+                placeholder='{"tenant_id":"...","sender_upn":"noreply@yourdomain.com"}'
+                value="{metadata}" />
+            <small class="form-text text-muted">
+                <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:wizard.metadata.hint"/>
+            </small>
+        </div>
+
+        <f:form.submit class="btn btn-primary"
+                       value="{f:translate(key: 'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.save')}" />
+
+        <f:link.action action="index"
+                       class="btn btn-default ms-2">
+            <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.cancel"/>
+        </f:link.action>
+
+    </form>
+
+</f:section>
+
+</html>

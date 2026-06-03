@@ -123,6 +123,7 @@ class OAuthModuleController extends ActionController
                     'client' => $client,
                     'metadata' => $metadataRaw,
                     'metadataError' => $metadataError,
+                    'metadataPlaceholder' => '{"key":"value"}',
                 ]);
                 return $this->htmlResponse($view->render('Backend/Wizard/Step2'));
             }
@@ -191,6 +192,7 @@ class OAuthModuleController extends ActionController
                     'client' => $client,
                     'metadata' => (string)($client->getMetadata() ?? ''),
                     'metadataError' => null,
+                    'metadataPlaceholder' => '{"key":"value"}',
                 ]);
                 return $this->htmlResponse($view->render('Backend/Wizard/Step2'));
             }

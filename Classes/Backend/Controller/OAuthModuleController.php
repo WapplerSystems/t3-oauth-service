@@ -12,6 +12,9 @@ use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Imaging\IconSize;
+use TYPO3\CMS\Core\Messaging\FlashMessage;
+use TYPO3\CMS\Core\Messaging\FlashMessageService;
+use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
@@ -297,13 +300,13 @@ class OAuthModuleController extends ActionController
     {
         $clientUid = (int)($this->request->getArgument('client') ?? 0);
         if ($clientUid <= 0) {
-            $this->addFlashMessage('Invalid client', 'OAuth Service', \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR);
+            $this->pushBackendFlash('Invalid client', ContextualFeedbackSeverity::ERROR);
             return $this->redirect('index');
         }
 
         $client = $this->clientRepository->findByUid($clientUid);
         if ($client === null) {
-            $this->addFlashMessage(sprintf('Client #%d not found', $clientUid), 'OAuth Service', \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR);
+            $this->pushBackendFlash(sprintf('Client #%d not found', $clientUid), ContextualFeedbackSeverity::ERROR);
             return $this->redirect('index');
         }
 
@@ -312,29 +315,46 @@ class OAuthModuleController extends ActionController
             $this->tokenAcquisitionService->invalidate($providerIdentifier);
             $token = $this->tokenAcquisitionService->getClientCredentialsToken($providerIdentifier);
         } catch (\Throwable $e) {
-            $this->addFlashMessage(
+            $this->pushBackendFlash(
                 sprintf('Token acquisition failed: %s', $e->getMessage()),
-                'OAuth Service',
-                \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR
+                ContextualFeedbackSeverity::ERROR
             );
             return $this->redirect('index');
         }
 
         if ($token === null || $token === '') {
-            $this->addFlashMessage(
+            $this->pushBackendFlash(
                 'No access token returned. Check client_id, client_secret and admin-consent.',
-                'OAuth Service',
-                \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR
+                ContextualFeedbackSeverity::ERROR
             );
             return $this->redirect('index');
         }
 
-        $this->addFlashMessage(
+        $this->pushBackendFlash(
             sprintf('Access token acquired for provider "%s" (%d chars).', $providerIdentifier, strlen($token)),
-            'OAuth Service',
-            \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::OK
+            ContextualFeedbackSeverity::OK
         );
         return $this->redirect('index');
+    }
+
+    /**
+     * Push a flash message into the BE-rendered default queue so the next
+     * request shows it at the top of the module. Extbase's own addFlashMessage
+     * writes to an extension-namespaced queue that the standard Module layout
+     * does not display.
+     */
+    private function pushBackendFlash(string $message, ContextualFeedbackSeverity $severity): void
+    {
+        $flashMessage = GeneralUtility::makeInstance(
+            FlashMessage::class,
+            $message,
+            'OAuth Service',
+            $severity,
+            true
+        );
+        GeneralUtility::makeInstance(FlashMessageService::class)
+            ->getMessageQueueByIdentifier()
+            ->enqueue($flashMessage);
     }
 
     public function disconnectAction(): ResponseInterface

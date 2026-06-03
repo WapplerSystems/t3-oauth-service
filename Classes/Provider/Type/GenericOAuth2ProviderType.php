@@ -111,6 +111,11 @@ final class GenericOAuth2ProviderType implements OAuthProviderTypeInterface
         return true;
     }
 
+    public function prefersClientCredentials(): bool
+    {
+        return false;
+    }
+
     public function fetchClientCredentialsToken(
         ProviderDefinition $providerDefinition,
         Client $client,

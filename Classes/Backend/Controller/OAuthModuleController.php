@@ -70,14 +70,19 @@ class OAuthModuleController extends ActionController
         $monitorStatus = $this->monitorTaskStatusService->getStatus(ConnectionMonitorCommand::COMMAND_IDENTIFIER);
 
         // Pre-compute which OAuth flows each configured client's provider type supports
-        // so the template can show the appropriate action button(s), and a
-        // pretty-printed metadata JSON for inline display.
+        // so the template can show the appropriate action button(s), a
+        // pretty-printed metadata JSON for inline display, and (for
+        // client_credentials-preferring providers) the cached token status.
         $clientCapabilities = [];
         $clientMetadataFormatted = [];
+        $clientTokenStatus = [];
         foreach ($configuredClients as $client) {
             $uid = (int)$client->getUid();
             $clientCapabilities[$uid] = $this->resolveClientCapabilities($client);
             $clientMetadataFormatted[$uid] = $this->formatClientMetadata((string)($client->getMetadata() ?? ''));
+            $clientTokenStatus[$uid] = $this->tokenAcquisitionService->getCachedTokenStatus(
+                (string)$client->getProvider()
+            );
         }
 
         $view->assignMultiple([
@@ -85,6 +90,7 @@ class OAuthModuleController extends ActionController
             'configuredClients' => $configuredClients,
             'clientCapabilities' => $clientCapabilities,
             'clientMetadataFormatted' => $clientMetadataFormatted,
+            'clientTokenStatus' => $clientTokenStatus,
             'callbackUrl' => $callbackUrl,
             'now' => time(),
             'monitorState' => $monitorStatus['state'],
@@ -392,11 +398,11 @@ class OAuthModuleController extends ActionController
      * Returns capability flags consumed by the template to render the
      * appropriate action buttons.
      *
-     * @return array{clientCredentials: bool, authorizationCode: bool}
+     * @return array{clientCredentials: bool, authorizationCode: bool, prefersClientCredentials: bool}
      */
     private function resolveClientCapabilities(Client $client): array
     {
-        $default = ['clientCredentials' => false, 'authorizationCode' => true];
+        $default = ['clientCredentials' => false, 'authorizationCode' => true, 'prefersClientCredentials' => false];
 
         $providerIdentifier = (string)$client->getProvider();
         if ($providerIdentifier === '') {
@@ -417,6 +423,7 @@ class OAuthModuleController extends ActionController
         return [
             'clientCredentials' => $type->supportsClientCredentials(),
             'authorizationCode' => $type->supportsRefresh(),
+            'prefersClientCredentials' => $type->prefersClientCredentials(),
         ];
     }
 

@@ -160,6 +160,22 @@
 				<source>Acquires a fresh OAuth 2.0 client_credentials access token for this client without any user redirect. Use to verify credentials and admin-consent for service-to-service flows.</source>
 			</trans-unit>
 
+			<trans-unit id="token.status.cached">
+				<source>Token valid until</source>
+			</trans-unit>
+
+			<trans-unit id="token.status.cached.title">
+				<source>An access token is cached and will be refreshed automatically before it expires. Click "Fetch token" to force a new token request.</source>
+			</trans-unit>
+
+			<trans-unit id="token.status.notFetched">
+				<source>No token cached yet — click "Fetch token" to verify</source>
+			</trans-unit>
+
+			<trans-unit id="token.status.roles">
+				<source>Roles:</source>
+			</trans-unit>
+
 			<trans-unit id="action.reconnect">
 				<source>Reconnect</source>
 			</trans-unit>

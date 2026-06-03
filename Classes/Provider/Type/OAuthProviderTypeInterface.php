@@ -27,6 +27,18 @@ interface OAuthProviderTypeInterface
     public function supportsClientCredentials(): bool;
 
     /**
+     * Whether this provider type — although capable of more — is meant to be
+     * used purely with client_credentials in this deployment. The BE module
+     * uses this to hide the "Connect" (authorization-code redirect) button
+     * for providers that would not work that way in practice (e.g. Microsoft
+     * Graph configured for Mail.Send Application permission).
+     *
+     * Defaults to false to remain backward-compatible with existing provider
+     * type implementations.
+     */
+    public function prefersClientCredentials(): bool;
+
+    /**
      * Performs an OAuth 2.0 Client Credentials Grant against the provider's
      * token endpoint and returns the raw token response.
      *

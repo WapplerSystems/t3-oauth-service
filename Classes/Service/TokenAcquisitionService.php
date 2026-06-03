@@ -124,6 +124,56 @@ final class TokenAcquisitionService implements LoggerAwareInterface
         $this->getCache()->flushByTag(self::tagFor($providerIdentifier));
     }
 
+    /**
+     * Returns metadata about the currently cached client_credentials token for
+     * the given provider (expires_at unix timestamp, derived roles claim from
+     * the JWT), or null when no token is cached. Never returns the token
+     * itself — callers should use getClientCredentialsToken() for that.
+     *
+     * Used by the OAuth Services BE module to render a status pill ("token
+     * valid until HH:MM") next to client_credentials providers without
+     * forcing a re-fetch on every page load.
+     *
+     * @return array{expiresAt: int, roles: list<string>}|null
+     */
+    public function getCachedTokenStatus(string $providerIdentifier, array $scopes = []): ?array
+    {
+        $cache = $this->getCache();
+        $cached = $cache->get($this->buildCacheKey($providerIdentifier, $scopes));
+        if (!is_array($cached) || !isset($cached['token'], $cached['expiresAt'])) {
+            return null;
+        }
+
+        return [
+            'expiresAt' => (int)$cached['expiresAt'],
+            'roles' => $this->extractRolesFromJwt((string)$cached['token']),
+        ];
+    }
+
+    /**
+     * Best-effort decode of the JWT payload's "roles" claim. Returns [] when
+     * the token is not a JWT or contains no roles.
+     *
+     * @return list<string>
+     */
+    private function extractRolesFromJwt(string $token): array
+    {
+        $segments = explode('.', $token);
+        if (count($segments) < 2) {
+            return [];
+        }
+        $padded = $segments[1] . str_repeat('=', (4 - strlen($segments[1]) % 4) % 4);
+        $decoded = base64_decode(strtr($padded, '-_', '+/'), true);
+        if ($decoded === false) {
+            return [];
+        }
+        $payload = json_decode($decoded, true);
+        if (!is_array($payload) || !isset($payload['roles']) || !is_array($payload['roles'])) {
+            return [];
+        }
+        return array_values(array_map('strval', $payload['roles']));
+    }
+
     private function getCache(): FrontendInterface
     {
         if ($this->cache === null) {

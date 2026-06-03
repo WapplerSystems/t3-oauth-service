@@ -150,7 +150,7 @@
 
                                     <div class="col-md-6">
                                         <div class="btn-toolbar" role="toolbar" style="margin-top: 4px;">
-                                            <f:if condition="{clientCapabilities.{client.uid}.authorizationCode} && {client.connections -> f:count()} == 0">
+                                            <f:if condition="{clientCapabilities.{client.uid}.authorizationCode} && !{clientCapabilities.{client.uid}.prefersClientCredentials} && {client.connections -> f:count()} == 0">
                                                 <div class="btn-group" role="group">
                                                     <f:link.action
                                                         action="connect"
@@ -165,13 +165,37 @@
                                                     <f:link.action
                                                         action="fetchToken"
                                                         arguments="{client: client.uid}"
-                                                        class="btn btn-default"
+                                                        class="btn {f:if(condition: clientCapabilities.{client.uid}.prefersClientCredentials, then: 'btn-primary', else: 'btn-default')}"
                                                         title="{f:translate(key: 'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.fetchToken.description')}">
                                                         <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.fetchToken"/>
                                                     </f:link.action>
                                                 </div>
                                             </f:if>
                                         </div>
+
+                                        <f:if condition="{clientCapabilities.{client.uid}.prefersClientCredentials}">
+                                            <div style="margin-top: 8px;">
+                                                <f:if condition="{clientTokenStatus.{client.uid}}">
+                                                    <f:then>
+                                                        <span class="label label-success" title="{f:translate(key: 'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:token.status.cached.title')}">
+                                                            <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:token.status.cached"/>
+                                                            <f:format.date format="H:i:s">{clientTokenStatus.{client.uid}.expiresAt}</f:format.date>
+                                                        </span>
+                                                        <f:if condition="{clientTokenStatus.{client.uid}.roles}">
+                                                            <small class="text-muted" style="margin-left: 8px;">
+                                                                <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:token.status.roles"/>
+                                                                <code>{clientTokenStatus.{client.uid}.roles -> f:join(separator: ', ')}</code>
+                                                            </small>
+                                                        </f:if>
+                                                    </f:then>
+                                                    <f:else>
+                                                        <span class="label label-default">
+                                                            <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:token.status.notFetched"/>
+                                                        </span>
+                                                    </f:else>
+                                                </f:if>
+                                            </div>
+                                        </f:if>
 
 
                                     </div>
@@ -201,11 +225,12 @@
                                     </f:if>
                                 </details>
 
-                                <hr/>
+                                <f:if condition="!{clientCapabilities.{client.uid}.prefersClientCredentials}">
+                                    <hr/>
 
-                                <h3 style="margin-top: 0;">
-                                    <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:connections"/>
-                                </h3>
+                                    <h3 style="margin-top: 0;">
+                                        <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:connections"/>
+                                    </h3>
 
                                 <f:if condition="{client.connections -> f:count()}">
                                     <f:then>
@@ -396,6 +421,7 @@
                                             <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:msg.noConnections"/>
                                         </p>
                                     </f:else>
+                                </f:if>
                                 </f:if>
                             </div>
                         </div>

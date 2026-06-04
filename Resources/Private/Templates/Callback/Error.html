@@ -1,0 +1,63 @@
+<!doctype html>
+<html
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    lang="{language}"
+>
+<head>
+    <meta charset="utf-8">
+    <title>
+        <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:callback.error.title"/>
+    </title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            padding: 2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .box {
+            border: 1px solid #f5c2c7;
+            border-radius: 8px;
+            padding: 1.5rem;
+            background: #fdf1f2;
+        }
+        pre {
+            background: #fff;
+            border: 1px solid #f5c2c7;
+            border-radius: 4px;
+            padding: .75rem;
+            overflow: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>
+            <f:switch expression="{kind}">
+                <f:case value="providerError">
+                    <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:callback.error.providerError.heading"/>
+                </f:case>
+                <f:case value="missingParams">
+                    <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:callback.error.missingParams.heading"/>
+                </f:case>
+                <f:defaultCase>
+                    <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:callback.error.failed.heading"/>
+                </f:defaultCase>
+            </f:switch>
+        </h1>
+        <f:if condition="{kind} == 'missingParams'">
+            <f:then>
+                <p>
+                    <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:callback.error.missingParams.body"/>
+                </p>
+            </f:then>
+            <f:else>
+                <pre>{detail}</pre>
+            </f:else>
+        </f:if>
+    </div>
+</body>
+</html>

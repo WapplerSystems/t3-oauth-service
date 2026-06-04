@@ -1,0 +1,57 @@
+<!doctype html>
+<html
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+    lang="{language}"
+>
+<head>
+    <meta charset="utf-8">
+    <title>
+        <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:callback.success.title"/>
+    </title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            padding: 2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .box {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+        a.button {
+            display: inline-block;
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            text-decoration: none;
+            border: 1px solid #005262;
+            color: #fff;
+            background: #005262;
+            margin-top: 1rem;
+        }
+        a.button:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>
+            <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:callback.success.heading"/>
+        </h1>
+        <p>
+            <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:callback.success.intro"/>
+        </p>
+        <p>
+            <a class="button" href="{backendModuleUrl}" target="_top">
+                <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:callback.success.backLink"/>
+            </a>
+        </p>
+        <p style="margin-top:1rem;font-size:0.9rem;color:#666;">
+            <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:callback.success.hint"/>
+        </p>
+    </div>
+</body>
+</html>

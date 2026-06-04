@@ -359,6 +359,57 @@
 				<target>Diese URL in der OAuth-Anbieter-Konfiguration (Google, Microsoft etc.) als zulässige Weiterleitungs-URI hinterlegen. Der Anbieter leitet den Nutzer nach erfolgter Autorisierung an diese Adresse zurück.</target>
 			</trans-unit>
 
+			<!-- OAuth callback page (rendered by OauthCallbackMiddleware after provider redirect) -->
+			<trans-unit id="callback.success.title">
+				<source>OAuth service connected</source>
+				<target>OAuth-Dienst verbunden</target>
+			</trans-unit>
+
+			<trans-unit id="callback.success.heading">
+				<source>OAuth service successfully connected</source>
+				<target>OAuth-Dienst erfolgreich verbunden</target>
+			</trans-unit>
+
+			<trans-unit id="callback.success.intro">
+				<source>Click the link below to return to the TYPO3 backend module:</source>
+				<target>Klicken Sie auf den folgenden Link, um zum TYPO3-Backend-Modul zurückzukehren:</target>
+			</trans-unit>
+
+			<trans-unit id="callback.success.backLink">
+				<source>Back to overview</source>
+				<target>Zurück zur Übersicht</target>
+			</trans-unit>
+
+			<trans-unit id="callback.success.hint">
+				<source>The link opens the TYPO3 backend in the main window. If you are not signed in yet, the login screen appears first.</source>
+				<target>Der Link öffnet das TYPO3-Backend im Hauptfenster. Falls Sie noch nicht angemeldet sind, erscheint zunächst der Login.</target>
+			</trans-unit>
+
+			<trans-unit id="callback.error.title">
+				<source>OAuth callback failed</source>
+				<target>OAuth-Callback fehlgeschlagen</target>
+			</trans-unit>
+
+			<trans-unit id="callback.error.providerError.heading">
+				<source>OAuth error</source>
+				<target>OAuth-Fehler</target>
+			</trans-unit>
+
+			<trans-unit id="callback.error.missingParams.heading">
+				<source>Missing parameters</source>
+				<target>Fehlende Parameter</target>
+			</trans-unit>
+
+			<trans-unit id="callback.error.missingParams.body">
+				<source>code/state required.</source>
+				<target>code/state werden benötigt.</target>
+			</trans-unit>
+
+			<trans-unit id="callback.error.failed.heading">
+				<source>Callback failed</source>
+				<target>Callback fehlgeschlagen</target>
+			</trans-unit>
+
 			<!-- DocHeader -->
 			<trans-unit id="action.wizardStart">
 				<source>Start wizard</source>

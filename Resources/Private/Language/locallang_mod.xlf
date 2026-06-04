@@ -289,6 +289,47 @@
 				<source>Register this URL as the allowed redirect URI in your OAuth provider configuration (Google, Microsoft, etc.). The provider redirects the user back to this address after authorization.</source>
 			</trans-unit>
 
+			<!-- OAuth callback page (rendered by OauthCallbackMiddleware after provider redirect) -->
+			<trans-unit id="callback.success.title">
+				<source>OAuth service connected</source>
+			</trans-unit>
+
+			<trans-unit id="callback.success.heading">
+				<source>OAuth service successfully connected</source>
+			</trans-unit>
+
+			<trans-unit id="callback.success.intro">
+				<source>Click the link below to return to the TYPO3 backend module:</source>
+			</trans-unit>
+
+			<trans-unit id="callback.success.backLink">
+				<source>Back to overview</source>
+			</trans-unit>
+
+			<trans-unit id="callback.success.hint">
+				<source>The link opens the TYPO3 backend in the main window. If you are not signed in yet, the login screen appears first.</source>
+			</trans-unit>
+
+			<trans-unit id="callback.error.title">
+				<source>OAuth callback failed</source>
+			</trans-unit>
+
+			<trans-unit id="callback.error.providerError.heading">
+				<source>OAuth error</source>
+			</trans-unit>
+
+			<trans-unit id="callback.error.missingParams.heading">
+				<source>Missing parameters</source>
+			</trans-unit>
+
+			<trans-unit id="callback.error.missingParams.body">
+				<source>code/state required.</source>
+			</trans-unit>
+
+			<trans-unit id="callback.error.failed.heading">
+				<source>Callback failed</source>
+			</trans-unit>
+
 			<!-- DocHeader -->
 			<trans-unit id="action.wizardStart">
 				<source>Start wizard</source>

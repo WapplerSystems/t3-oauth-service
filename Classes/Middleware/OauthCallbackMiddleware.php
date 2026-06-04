@@ -1,6 +1,5 @@
 <?php
 
-
 declare(strict_types=1);
 
 namespace WapplerSystems\OauthService\Middleware;
@@ -10,33 +9,41 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use TYPO3\CMS\Backend\Routing\UriBuilder as BackendUriBuilder;
+use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Http\HtmlResponse;
+use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
 use TYPO3\CMS\Core\Routing\BackendEntryPointResolver;
+use TYPO3\CMS\Core\View\ViewFactoryData;
+use TYPO3\CMS\Core\View\ViewFactoryInterface;
 use WapplerSystems\OauthService\Service\OAuthFlowService;
 
 final class OauthCallbackMiddleware implements MiddlewareInterface
 {
+    private const TEMPLATE_ROOT_PATHS = ['EXT:oauth_service/Resources/Private/Templates/'];
 
     public function __construct(
-        private readonly OAuthFlowService          $flowService,
-        private readonly BackendUriBuilder         $backendUriBuilder,
-        private readonly BackendEntryPointResolver $backendEntryPointResolver,
-    )
-    {
-    }
+        private readonly OAuthFlowService           $flowService,
+        private readonly BackendUriBuilder          $backendUriBuilder,
+        private readonly BackendEntryPointResolver  $backendEntryPointResolver,
+        private readonly ViewFactoryInterface       $viewFactory,
+        private readonly LanguageServiceFactory     $languageServiceFactory,
+    ) {}
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $path = $request->getUri()->getPath();
 
-        // Nur unsere Callback-URL abfangen, alles andere normal weiterreichen.
-        // Der Backend-Entry-Point ist konfigurierbar (TYPO3_CONF_VARS/BE/entryPoint),
-        // daher wird der Pfad relativ zum Entry Point gebildet.
+        // Only intercept the configured callback path; the backend entry point is
+        // configurable via $TYPO3_CONF_VARS/BE/entryPoint, so build the path
+        // relative to it.
         $callbackPath = $this->backendEntryPointResolver->getPathFromRequest($request) . 'oauthservice/callback';
         if ($path !== $callbackPath) {
             return $handler->handle($request);
         }
 
+        // Make sure f:translate can resolve labels even though we run before
+        // backend bootstrap completes.
+        $this->ensureLanguageService($request);
 
         $queryParams = $request->getQueryParams();
         $code = (string)($queryParams['code'] ?? '');
@@ -44,71 +51,89 @@ final class OauthCallbackMiddleware implements MiddlewareInterface
         $error = (string)($queryParams['error'] ?? '');
 
         if ($error !== '') {
-            return new HtmlResponse('<h1>OAuth error</h1><p>' . htmlspecialchars($error) . '</p>', 400);
+            return $this->renderError($request, 'providerError', $error, 400);
         }
         if ($code === '' || $state === '') {
-            return new HtmlResponse('<h1>Missing parameters</h1><p>code/state required.</p>', 400);
+            return $this->renderError($request, 'missingParams', '', 400);
         }
 
         try {
-            $connection = $this->flowService->handleCallback($request, $code, $state);
+            $this->flowService->handleCallback($request, $code, $state);
         } catch (\Throwable $e) {
-            return new HtmlResponse('<h1>Callback failed</h1><pre>' . htmlspecialchars($e->getMessage()) . '</pre>', 500);
+            return $this->renderError($request, 'failed', $e->getMessage(), 500);
         }
 
-        $backendModuleUrl = $this->backendUriBuilder->buildUriFromRoute('oauthservice.OAuthModule_index')->withHost($request->getUri()->getHost())->withScheme($request->getUri()->getScheme())->__toString();
+        $backendModuleUrl = $this->backendUriBuilder->buildUriFromRoute('oauthservice.OAuthModule_index')
+            ->withHost($request->getUri()->getHost())
+            ->withScheme($request->getUri()->getScheme())
+            ->__toString();
 
-        $html = '<!doctype html>
-<html lang="de">
-<head>
-    <meta charset="utf-8">
-    <title>OAuth Dienst verbunden</title>
-    <style>
-        body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            padding: 2rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .box {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 1.5rem;
-        }
-        a.button {
-            display: inline-block;
-            padding: 0.6rem 1.2rem;
-            border-radius: 4px;
-            text-decoration: none;
-            border: 1px solid #005262;
-            color: #fff;
-            background: #005262;
-            margin-top: 1rem;
-        }
-        a.button:hover {
-            opacity: 0.9;
-        }
-    </style>
-</head>
-<body>
-    <div class="box">
-        <h1>OAuth Dienst erfolgreich verbunden</h1>
-        <p>Klicke auf den folgenden Link, um zum TYPO3 Backend-Modul zurückzukehren:</p>
-        <p>
-            <a class="button" href="' . htmlspecialchars($backendModuleUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '" target="_top">
-                Zurück zur Übersicht
-            </a>
-        </p>
-        <p style="margin-top:1rem;font-size:0.9rem;color:#666;">
-            Hinweis: Der Link öffnet das TYPO3 Backend im Hauptfenster.
-            Falls du noch nicht angemeldet bist, erscheint zunächst der Login.
-        </p>
-    </div>
-</body>
-</html>';
+        return new HtmlResponse($this->renderTemplate(
+            $request,
+            'Callback/Success',
+            ['backendModuleUrl' => $backendModuleUrl]
+        ));
+    }
 
-        return new HtmlResponse($html);
+    private function renderError(
+        ServerRequestInterface $request,
+        string $kind,
+        string $detail,
+        int $statusCode,
+    ): HtmlResponse {
+        return new HtmlResponse(
+            $this->renderTemplate($request, 'Callback/Error', [
+                'kind' => $kind,
+                'detail' => $detail,
+            ]),
+            $statusCode
+        );
+    }
 
+    /**
+     * @param array<string, mixed> $variables
+     */
+    private function renderTemplate(ServerRequestInterface $request, string $templateName, array $variables): string
+    {
+        $view = $this->viewFactory->create(new ViewFactoryData(
+            templateRootPaths: self::TEMPLATE_ROOT_PATHS,
+            request: $request,
+            format: 'html',
+        ));
+        $view->assignMultiple($variables + ['language' => $this->resolveLanguageCode($request)]);
+        return $view->render($templateName);
+    }
 
+    private function resolveLanguageCode(ServerRequestInterface $request): string
+    {
+        $beUser = $this->getBackendUser($request);
+        $lang = (string)($beUser?->user['lang'] ?? '');
+        return $lang !== '' ? $lang : 'en';
+    }
+
+    /**
+     * Without an active LanguageService, f:translate falls back to the XLF source
+     * (English). The locked-backend middleware normally sets it up, but we run
+     * before that, so prime $GLOBALS['LANG'] ourselves from the BE user.
+     */
+    private function ensureLanguageService(ServerRequestInterface $request): void
+    {
+        if (isset($GLOBALS['LANG'])) {
+            return;
+        }
+        $beUser = $this->getBackendUser($request);
+        $GLOBALS['LANG'] = $beUser !== null
+            ? $this->languageServiceFactory->createFromUserPreferences($beUser)
+            : $this->languageServiceFactory->create('default');
+    }
+
+    private function getBackendUser(ServerRequestInterface $request): ?BackendUserAuthentication
+    {
+        $beUser = $request->getAttribute('backend.user');
+        if ($beUser instanceof BackendUserAuthentication) {
+            return $beUser;
+        }
+        $globalBeUser = $GLOBALS['BE_USER'] ?? null;
+        return $globalBeUser instanceof BackendUserAuthentication ? $globalBeUser : null;
     }
 }

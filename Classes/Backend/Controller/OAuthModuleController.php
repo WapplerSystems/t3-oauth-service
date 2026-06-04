@@ -18,6 +18,7 @@ use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
+use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 use WapplerSystems\OauthService\Command\ConnectionMonitorCommand;
 use WapplerSystems\OauthService\Domain\Model\Client;
 use WapplerSystems\OauthService\Domain\Repository\ClientRepository;
@@ -125,7 +126,10 @@ class OAuthModuleController extends ActionController
             if ($metadataRaw !== '') {
                 $decoded = json_decode($metadataRaw, true);
                 if (!is_array($decoded)) {
-                    $metadataError = (string)(json_last_error_msg() ?: 'Invalid JSON');
+                    $metadataError = (string)(json_last_error_msg() ?: LocalizationUtility::translate(
+                        'wizard.metadata.invalidJson.fallback',
+                        'oauth_service'
+                    ));
                 }
             }
 
@@ -258,7 +262,10 @@ class OAuthModuleController extends ActionController
             ->setHref((string)$this->backendUriBuilder->buildUriFromRoute(
                 'oauthservice.OAuthModule_wizard'
             ))
-            ->setTitle('Wizard starten')
+            ->setTitle((string)LocalizationUtility::translate(
+                'action.wizardStart',
+                'oauth_service'
+            ))
             ->setShowLabelText(true)
             ->setIcon($this->iconFactory->getIcon('actions-plus', IconSize::SMALL));
         $buttonBar->addButton($newRecordButton, ButtonBar::BUTTON_POSITION_LEFT, 10);
@@ -318,13 +325,23 @@ class OAuthModuleController extends ActionController
     {
         $clientUid = (int)($this->request->getArgument('client') ?? 0);
         if ($clientUid <= 0) {
-            $this->pushBackendFlash('Invalid client', ContextualFeedbackSeverity::ERROR);
+            $this->pushBackendFlash(
+                (string)LocalizationUtility::translate('flash.invalidClient', 'oauth_service'),
+                ContextualFeedbackSeverity::ERROR
+            );
             return $this->redirect('index');
         }
 
         $client = $this->clientRepository->findByUid($clientUid);
         if ($client === null) {
-            $this->pushBackendFlash(sprintf('Client #%d not found', $clientUid), ContextualFeedbackSeverity::ERROR);
+            $this->pushBackendFlash(
+                (string)LocalizationUtility::translate(
+                    'flash.clientNotFound',
+                    'oauth_service',
+                    [$clientUid]
+                ),
+                ContextualFeedbackSeverity::ERROR
+            );
             return $this->redirect('index');
         }
 
@@ -334,7 +351,11 @@ class OAuthModuleController extends ActionController
             $token = $this->tokenAcquisitionService->getClientCredentialsToken($providerIdentifier);
         } catch (\Throwable $e) {
             $this->pushBackendFlash(
-                sprintf('Token acquisition failed: %s', $e->getMessage()),
+                (string)LocalizationUtility::translate(
+                    'flash.tokenAcquisitionFailed',
+                    'oauth_service',
+                    [$e->getMessage()]
+                ),
                 ContextualFeedbackSeverity::ERROR
             );
             return $this->redirect('index');
@@ -342,14 +363,18 @@ class OAuthModuleController extends ActionController
 
         if ($token === null || $token === '') {
             $this->pushBackendFlash(
-                'No access token returned. Check client_id, client_secret and admin-consent.',
+                (string)LocalizationUtility::translate('flash.noAccessToken', 'oauth_service'),
                 ContextualFeedbackSeverity::ERROR
             );
             return $this->redirect('index');
         }
 
         $this->pushBackendFlash(
-            sprintf('Access token acquired for provider "%s" (%d chars).', $providerIdentifier, strlen($token)),
+            (string)LocalizationUtility::translate(
+                'flash.tokenAcquired',
+                'oauth_service',
+                [$providerIdentifier, strlen($token)]
+            ),
             ContextualFeedbackSeverity::OK
         );
         return $this->redirect('index');

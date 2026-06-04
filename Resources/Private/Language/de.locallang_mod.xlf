@@ -136,6 +136,16 @@
 				<target>Laufzeit</target>
 			</trans-unit>
 
+			<trans-unit id="connection.lifetime.tooltip">
+				<source>%1$s seconds</source>
+				<target>%1$s Sekunden</target>
+			</trans-unit>
+
+			<trans-unit id="connection.providerMetadata">
+				<source>Provider metadata</source>
+				<target>Anbieter-Metadaten</target>
+			</trans-unit>
+
 			<trans-unit id="connection.lastRefreshAt">
 				<source>Last refresh</source>
 				<target>Letzter Refresh</target>
@@ -308,6 +318,11 @@
 				<target>Das JSON konnte nicht geparst werden:</target>
 			</trans-unit>
 
+			<trans-unit id="wizard.metadata.invalidJson.fallback">
+				<source>Invalid JSON</source>
+				<target>Ungültiges JSON</target>
+			</trans-unit>
+
 			<trans-unit id="action.cancel">
 				<source>Cancel</source>
 				<target>Abbrechen</target>
@@ -342,6 +357,38 @@
 			<trans-unit id="info.callbackUrl.description">
 				<source>Register this URL as the allowed redirect URI in your OAuth provider configuration (Google, Microsoft, etc.). The provider redirects the user back to this address after authorization.</source>
 				<target>Diese URL in der OAuth-Anbieter-Konfiguration (Google, Microsoft etc.) als zulässige Weiterleitungs-URI hinterlegen. Der Anbieter leitet den Nutzer nach erfolgter Autorisierung an diese Adresse zurück.</target>
+			</trans-unit>
+
+			<!-- DocHeader -->
+			<trans-unit id="action.wizardStart">
+				<source>Start wizard</source>
+				<target>Wizard starten</target>
+			</trans-unit>
+
+			<!-- Flash messages -->
+			<trans-unit id="flash.invalidClient">
+				<source>Invalid client.</source>
+				<target>Ungültiger Client.</target>
+			</trans-unit>
+
+			<trans-unit id="flash.clientNotFound">
+				<source>Client #%1$d not found.</source>
+				<target>Client #%1$d nicht gefunden.</target>
+			</trans-unit>
+
+			<trans-unit id="flash.tokenAcquisitionFailed">
+				<source>Token acquisition failed: %1$s</source>
+				<target>Token-Beschaffung fehlgeschlagen: %1$s</target>
+			</trans-unit>
+
+			<trans-unit id="flash.noAccessToken">
+				<source>No access token returned. Check client_id, client_secret and admin-consent.</source>
+				<target>Es wurde kein Access-Token zurückgegeben. Bitte client_id, client_secret und Admin-Consent prüfen.</target>
+			</trans-unit>
+
+			<trans-unit id="flash.tokenAcquired">
+				<source>Access token acquired for provider "%1$s" (%2$d characters).</source>
+				<target>Access-Token für Anbieter „%1$s" abgerufen (%2$d Zeichen).</target>
 			</trans-unit>
 
 			<!-- Messages -->

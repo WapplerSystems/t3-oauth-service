@@ -315,7 +315,7 @@
                                                                     <f:variable name="lifetimeSeconds" value="{expiresAt - now}"/>
                                                                     <f:if condition="{lifetimeSeconds} > 0">
                                                                         <f:then>
-                                                                            <span title="{lifetimeSeconds} seconds">
+                                                                            <span title="{f:translate(key: 'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:connection.lifetime.tooltip', arguments: '{0: lifetimeSeconds}')}">
                                                                                 <f:format.number decimals="0" thousandsSeparator=".">{lifetimeSeconds}</f:format.number>s
                                                                             </span>
                                                                         </f:then>
@@ -389,7 +389,7 @@
                                                             <td colspan="8" style="padding: 0;">
                                                                 <details style="padding: 8px 12px;">
                                                                     <summary style="cursor: pointer; font-size: 12px; color: #666;">
-                                                                        Provider Metadata
+                                                                        <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:connection.providerMetadata"/>
                                                                     </summary>
                                                                     <div style="margin-top: 8px;">
                                                                         <f:variable name="meta" value="{conn.metadataArray}" />

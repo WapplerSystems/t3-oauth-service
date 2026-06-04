@@ -110,6 +110,14 @@
 				<source>Lifetime</source>
 			</trans-unit>
 
+			<trans-unit id="connection.lifetime.tooltip">
+				<source>%1$s seconds</source>
+			</trans-unit>
+
+			<trans-unit id="connection.providerMetadata">
+				<source>Provider metadata</source>
+			</trans-unit>
+
 			<trans-unit id="connection.lastRefreshAt">
 				<source>Last refresh</source>
 			</trans-unit>
@@ -248,6 +256,10 @@
 				<source>The JSON could not be parsed:</source>
 			</trans-unit>
 
+			<trans-unit id="wizard.metadata.invalidJson.fallback">
+				<source>Invalid JSON</source>
+			</trans-unit>
+
 			<trans-unit id="action.cancel">
 				<source>Cancel</source>
 			</trans-unit>
@@ -275,6 +287,32 @@
 
 			<trans-unit id="info.callbackUrl.description">
 				<source>Register this URL as the allowed redirect URI in your OAuth provider configuration (Google, Microsoft, etc.). The provider redirects the user back to this address after authorization.</source>
+			</trans-unit>
+
+			<!-- DocHeader -->
+			<trans-unit id="action.wizardStart">
+				<source>Start wizard</source>
+			</trans-unit>
+
+			<!-- Flash messages -->
+			<trans-unit id="flash.invalidClient">
+				<source>Invalid client.</source>
+			</trans-unit>
+
+			<trans-unit id="flash.clientNotFound">
+				<source>Client #%1$d not found.</source>
+			</trans-unit>
+
+			<trans-unit id="flash.tokenAcquisitionFailed">
+				<source>Token acquisition failed: %1$s</source>
+			</trans-unit>
+
+			<trans-unit id="flash.noAccessToken">
+				<source>No access token returned. Check client_id, client_secret and admin-consent.</source>
+			</trans-unit>
+
+			<trans-unit id="flash.tokenAcquired">
+				<source>Access token acquired for provider "%1$s" (%2$d characters).</source>
 			</trans-unit>
 
 			<!-- Messages -->

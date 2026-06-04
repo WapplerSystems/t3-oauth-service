@@ -27,7 +27,12 @@ final class OAuthClientService
      */
     public function getActiveClientsAsOptions(string $provider): array
     {
-        $qb = $this->connectionPool->getQueryBuilderForTable(self::CLIENT_TABLE);
+        // Use raw DBAL QueryBuilder via Connection (not ConnectionPool's TCA-aware
+        // one) so callers inside the Install Tool failsafe bootstrap (no TCA loaded)
+        // can still resolve clients.
+        $qb = $this->connectionPool
+            ->getConnectionForTable(self::CLIENT_TABLE)
+            ->createQueryBuilder();
         $clients = $qb
             ->select('uid', 'client_id')
             ->from(self::CLIENT_TABLE)
@@ -107,7 +112,13 @@ final class OAuthClientService
      */
     public function getActiveClientMetadataByProvider(string $provider): array
     {
-        $qb = $this->connectionPool->getQueryBuilderForTable(self::CLIENT_TABLE);
+        // Use raw DBAL QueryBuilder via Connection — the ConnectionPool's
+        // getQueryBuilderForTable() consults TCA, which is not loaded in the
+        // Install Tool failsafe bootstrap where the GraphTransport mail test
+        // runs.
+        $qb = $this->connectionPool
+            ->getConnectionForTable(self::CLIENT_TABLE)
+            ->createQueryBuilder();
         $row = $qb
             ->select('metadata')
             ->from(self::CLIENT_TABLE)

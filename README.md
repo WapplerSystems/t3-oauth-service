@@ -49,36 +49,73 @@ The module is available at **System > OAuth Services** (admin only). It lists al
 
 ### Registering a Provider
 
-Other extensions register OAuth providers via `Services.php`:
+Providers are registered via a DI tag — `ProviderRegistry`'s constructor consumes a tagged iterator and populates itself at container build time. This makes registered providers visible in any bootstrap mode, **including the TYPO3 Install Tool's failsafe boot** (where extension `ext_localconf.php` files are NOT executed). Use this for any code path the Install Tool might hit, such as the "Test Mail Setup" form when a mail transport depends on OAuth tokens.
+
+**Recommended: `Configuration/Services.yaml`**
+
+```yaml
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # … your other services …
+
+  my_extension.provider_definition:
+    class: WapplerSystems\OauthService\Provider\ProviderDefinition
+    autowire: false
+    arguments:
+      $identifier: 'my_provider'
+      $title: 'My Provider'
+      $type: 'generic_oauth2'
+      $authorizationUrl: 'https://provider.example/oauth/authorize'
+      $tokenUrl: 'https://provider.example/oauth/token'
+      $defaultScopes: ['read', 'write']
+    tags:
+      - 'oauth_service.provider_definition'
+```
+
+**Equivalent: `Configuration/Services.php`**
 
 ```php
-use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use WapplerSystems\OauthService\Provider\ProviderDefinition;
-use WapplerSystems\OauthService\Provider\ProviderRegistryInterface;
 
-return static function (ContainerConfigurator $container, ContainerBuilder $builder): void {
-    $builder->addCompilerPass(
-        new class implements CompilerPassInterface {
-            public function process(ContainerBuilder $container): void {
-                $registry = $container->findDefinition(ProviderRegistryInterface::class);
-                $registry->addMethodCall('register', [
-                    new Definition(ProviderDefinition::class, [
-                        'my_provider',                               // identifier
-                        'My Provider',                               // title
-                        'generic_oauth2',                            // type
-                        'https://provider.example/oauth/authorize',  // authorizationUrl
-                        'https://provider.example/oauth/token',      // tokenUrl
-                        ['read', 'write'],                           // defaultScopes
-                    ]),
-                ]);
-            }
-        }
-    );
+return static function (ContainerConfigurator $container): void {
+    $services = $container->services()
+        ->defaults()
+        ->autowire()
+        ->autoconfigure();
+
+    $services->load('Vendor\\MyExtension\\', __DIR__ . '/../Classes/*');
+
+    $services->set('my_extension.provider_definition', ProviderDefinition::class)
+        ->autowire(false)
+        ->args([
+            '$identifier' => 'my_provider',
+            '$title' => 'My Provider',
+            '$type' => 'generic_oauth2',
+            '$authorizationUrl' => 'https://provider.example/oauth/authorize',
+            '$tokenUrl' => 'https://provider.example/oauth/token',
+            '$defaultScopes' => ['read', 'write'],
+        ])
+        ->tag('oauth_service.provider_definition');
 };
 ```
+
+#### Legacy: imperative registration
+
+Older releases registered providers via `ext_localconf.php`:
+
+```php
+$registry = GeneralUtility::makeInstance(ProviderRegistryInterface::class);
+$registry->register(new ProviderDefinition(
+    identifier: 'my_provider', title: 'My Provider', type: 'generic_oauth2', /* … */
+));
+```
+
+This still works — `register()` is idempotent by identifier, so existing code is not broken by the DI-tag mechanism. However, providers registered only this way are **invisible to the Install Tool's failsafe bootstrap**, so prefer the DI-tag pattern above.
 
 ### Retrieving Tokens
 

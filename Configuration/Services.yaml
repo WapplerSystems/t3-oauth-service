@@ -14,6 +14,8 @@ services:
 
   WapplerSystems\OauthService\Provider\ProviderRegistry:
     public: true
+    arguments:
+      $taggedDefinitions: !tagged_iterator 'oauth_service.provider_definition'
 
   WapplerSystems\OauthService\Provider\Type\GenericOAuth2ProviderType:
     public: true

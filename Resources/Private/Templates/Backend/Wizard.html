@@ -15,15 +15,20 @@
 
     <form action="{formURI}" method="get" target="_top">
 
-        <p>Wählen Sie den Dienst aus, mit dem Sie eine Verbindung aufbauen möchten.</p>
+        <p>
+            <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:wizard.serviceSelection.intro"/>
+        </p>
 
         <div class="form-group">
-            <label for="oauthservice" class="form-label">OAuth service</label>
+            <label for="oauthservice" class="form-label">
+                <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:wizard.serviceSelection.label"/>
+            </label>
             <f:form.select id="oauthservice" name="oauthservice" class="form-select" options="{clientDefinitions}" optionValueField="identifier" optionLabelField="title" />
         </div>
 
 
-        <f:form.submit class="btn btn-primary" value="Weiter" />
+        <f:form.submit class="btn btn-primary"
+                       value="{f:translate(key: 'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.continue')}" />
 
     </form>
 

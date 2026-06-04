@@ -76,6 +76,21 @@
 				<target>Benachrichtigungs-E-Mail</target>
 			</trans-unit>
 
+			<trans-unit id="client.metadata">
+				<source>Metadata (JSON)</source>
+				<target>Metadaten (JSON)</target>
+			</trans-unit>
+
+			<trans-unit id="client.metadata.empty">
+				<source>not set</source>
+				<target>nicht gesetzt</target>
+			</trans-unit>
+
+			<trans-unit id="client.metadata.emptyDescription">
+				<source>No metadata stored for this client. Edit the client row to add a JSON object — e.g. {"tenant_id":"…","sender_upn":"…"} for Microsoft Graph.</source>
+				<target>Für diesen Client sind keine Metadaten gespeichert. Den Client-Datensatz bearbeiten und ein JSON-Objekt eintragen — z. B. {"tenant_id":"…","sender_upn":"…"} für Microsoft Graph.</target>
+			</trans-unit>
+
 			<trans-unit id="client.callbackRoute">
 				<source>Callback route</source>
 				<target>Callback-Route</target>
@@ -168,6 +183,56 @@
 				<target>Verbinden</target>
 			</trans-unit>
 
+			<trans-unit id="action.fetchToken">
+				<source>Fetch token (app-only)</source>
+				<target>Token abrufen (App-Only)</target>
+			</trans-unit>
+
+			<trans-unit id="action.fetchToken.description">
+				<source>Acquires a fresh OAuth 2.0 client_credentials access token for this client without any user redirect. Use to verify credentials and admin-consent for service-to-service flows.</source>
+				<target>Holt für diesen Client ein neues OAuth-2.0-client_credentials-Access-Token ohne Nutzer-Redirect. Eignet sich zum Prüfen der Zugangsdaten und des Admin-Consents für Service-to-Service-Flows.</target>
+			</trans-unit>
+
+			<trans-unit id="token.status.cached">
+				<source>Token valid until</source>
+				<target>Token gültig bis</target>
+			</trans-unit>
+
+			<trans-unit id="token.status.cached.title">
+				<source>An access token is cached and will be refreshed automatically before it expires. Click "Fetch token" to force a new token request.</source>
+				<target>Ein Access-Token ist zwischengespeichert und wird automatisch erneuert, bevor es abläuft. Auf „Token abrufen" klicken, um eine neue Token-Anfrage zu erzwingen.</target>
+			</trans-unit>
+
+			<trans-unit id="token.status.notFetched">
+				<source>No token cached yet — click "Fetch token" to verify</source>
+				<target>Noch kein Token zwischengespeichert — „Token abrufen" klicken, um zu prüfen</target>
+			</trans-unit>
+
+			<trans-unit id="token.status.roles">
+				<source>Roles:</source>
+				<target>Rollen:</target>
+			</trans-unit>
+
+			<trans-unit id="connect.intro">
+				<source>The OAuth client has been saved. The next step is to authorize it against the provider — you will be redirected to the provider's login page where you sign in (or are already signed in) and confirm the requested permissions. After the redirect back, this OAuth client will have an active connection that the system can refresh in the background.</source>
+				<target>Der OAuth-Client wurde gespeichert. Im nächsten Schritt wird er beim Anbieter autorisiert — Sie werden auf die Login-Seite des Anbieters weitergeleitet, melden sich an (oder sind bereits angemeldet) und bestätigen die angeforderten Berechtigungen. Nach der Rückleitung verfügt dieser OAuth-Client über eine aktive Verbindung, die das System im Hintergrund erneuern kann.</target>
+			</trans-unit>
+
+			<trans-unit id="connect.button">
+				<source>Authorize at provider</source>
+				<target>Beim Anbieter autorisieren</target>
+			</trans-unit>
+
+			<trans-unit id="connect.hint.title">
+				<source>What happens when I click "Authorize at provider"?</source>
+				<target>Was passiert beim Klick auf „Beim Anbieter autorisieren"?</target>
+			</trans-unit>
+
+			<trans-unit id="connect.hint.body">
+				<source>Your browser opens the provider's authorize endpoint with a unique state parameter (CSRF protection) and a PKCE challenge. The provider asks you to log in and grant the configured scopes. On success the provider redirects back to this TYPO3 backend, the callback endpoint exchanges the authorization code for an access token + refresh token, and the connection appears as "Connected" in the overview.</source>
+				<target>Ihr Browser öffnet den Authorize-Endpunkt des Anbieters mit einem eindeutigen state-Parameter (CSRF-Schutz) und einer PKCE-Challenge. Der Anbieter verlangt die Anmeldung und das Bestätigen der konfigurierten Scopes. Bei Erfolg leitet der Anbieter zurück ins TYPO3-Backend, der Callback-Endpunkt tauscht den Authorization-Code gegen ein Access- und Refresh-Token, und die Verbindung erscheint in der Übersicht als „Verbunden".</target>
+			</trans-unit>
+
 			<trans-unit id="action.reconnect">
 				<source>Reconnect</source>
 				<target>Neu verbinden</target>
@@ -186,6 +251,61 @@
 			<trans-unit id="action.save">
 				<source>Save</source>
 				<target>Speichern</target>
+			</trans-unit>
+
+			<trans-unit id="action.continue">
+				<source>Continue</source>
+				<target>Weiter</target>
+			</trans-unit>
+
+			<trans-unit id="wizard.serviceSelection.intro">
+				<source>Select the service you want to connect to.</source>
+				<target>Wählen Sie den Dienst aus, mit dem Sie eine Verbindung aufbauen möchten.</target>
+			</trans-unit>
+
+			<trans-unit id="wizard.serviceSelection.label">
+				<source>OAuth service</source>
+				<target>OAuth-Dienst</target>
+			</trans-unit>
+
+			<trans-unit id="wizard.credentials.intro">
+				<source>Open the provider's admin console, create an OAuth client there, and paste the resulting Client ID and Client Secret here.</source>
+				<target>Öffnen Sie die Admin-Konsole des Anbieters, legen Sie dort einen OAuth-Client an und tragen Sie die ausgegebene Client ID und das Client Secret hier ein.</target>
+			</trans-unit>
+
+			<trans-unit id="wizard.credentials.openProviderConsole">
+				<source>Open provider console</source>
+				<target>Anbieter-Konsole öffnen</target>
+			</trans-unit>
+
+			<trans-unit id="wizard.credentials.setupGuide.title">
+				<source>Setup guide</source>
+				<target>Setup-Anleitung</target>
+			</trans-unit>
+
+			<trans-unit id="wizard.metadata.label">
+				<source>Metadata (JSON)</source>
+				<target>Metadaten (JSON)</target>
+			</trans-unit>
+
+			<trans-unit id="wizard.metadata.help">
+				<source>This provider supports the OAuth 2.0 client_credentials flow. Enter any provider-specific parameters here as a JSON object — for example tenant_id and sender_upn for Microsoft Graph. Leave empty if the provider needs no extra configuration.</source>
+				<target>Dieser Anbieter unterstützt den OAuth-2.0-client_credentials-Flow. Hier anbieterspezifische Parameter als JSON-Objekt eintragen — etwa tenant_id und sender_upn für Microsoft Graph. Leer lassen, wenn der Anbieter keine zusätzliche Konfiguration benötigt.</target>
+			</trans-unit>
+
+			<trans-unit id="wizard.metadata.setupGuide">
+				<source>Open the provider's setup guide</source>
+				<target>Setup-Anleitung des Anbieters öffnen</target>
+			</trans-unit>
+
+			<trans-unit id="wizard.metadata.hint">
+				<source>Must be valid JSON or empty. Consumer extensions read individual keys via OAuthClientService.</source>
+				<target>Muss gültiges JSON oder leer sein. Konsumierende Extensions lesen einzelne Schlüssel über den OAuthClientService.</target>
+			</trans-unit>
+
+			<trans-unit id="wizard.metadata.invalidJson">
+				<source>The JSON could not be parsed:</source>
+				<target>Das JSON konnte nicht geparst werden:</target>
 			</trans-unit>
 
 			<trans-unit id="action.cancel">

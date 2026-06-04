@@ -66,10 +66,6 @@
 				<source>Metadata (JSON)</source>
 			</trans-unit>
 
-			<trans-unit id="client.metadata.description">
-				<source>Optional JSON object with provider-specific configuration that lives next to the credentials. Consumer extensions read individual keys via OAuthClientService.</source>
-			</trans-unit>
-
 			<trans-unit id="client.metadata.empty">
 				<source>not set</source>
 			</trans-unit>
@@ -206,6 +202,30 @@
 
 			<trans-unit id="action.save">
 				<source>Save</source>
+			</trans-unit>
+
+			<trans-unit id="action.continue">
+				<source>Continue</source>
+			</trans-unit>
+
+			<trans-unit id="wizard.serviceSelection.intro">
+				<source>Select the service you want to connect to.</source>
+			</trans-unit>
+
+			<trans-unit id="wizard.serviceSelection.label">
+				<source>OAuth service</source>
+			</trans-unit>
+
+			<trans-unit id="wizard.credentials.intro">
+				<source>Open the provider's admin console, create an OAuth client there, and paste the resulting Client ID and Client Secret here.</source>
+			</trans-unit>
+
+			<trans-unit id="wizard.credentials.openProviderConsole">
+				<source>Open provider console</source>
+			</trans-unit>
+
+			<trans-unit id="wizard.credentials.setupGuide.title">
+				<source>Setup guide</source>
 			</trans-unit>
 
 			<trans-unit id="wizard.metadata.label">

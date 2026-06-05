@@ -127,8 +127,7 @@ class OAuthModuleController extends ActionController
                 $decoded = json_decode($metadataRaw, true);
                 if (!is_array($decoded)) {
                     $metadataError = (string)(json_last_error_msg() ?: LocalizationUtility::translate(
-                        'wizard.metadata.invalidJson.fallback',
-                        'oauth_service'
+                        'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:wizard.metadata.invalidJson.fallback'
                     ));
                 }
             }
@@ -263,8 +262,7 @@ class OAuthModuleController extends ActionController
                 'oauthservice.OAuthModule_wizard'
             ))
             ->setTitle((string)LocalizationUtility::translate(
-                'action.wizardStart',
-                'oauth_service'
+                'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.wizardStart'
             ))
             ->setShowLabelText(true)
             ->setIcon($this->iconFactory->getIcon('actions-plus', IconSize::SMALL));
@@ -326,7 +324,9 @@ class OAuthModuleController extends ActionController
         $clientUid = (int)($this->request->getArgument('client') ?? 0);
         if ($clientUid <= 0) {
             $this->pushBackendFlash(
-                (string)LocalizationUtility::translate('flash.invalidClient', 'oauth_service'),
+                (string)LocalizationUtility::translate(
+                    'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:flash.invalidClient'
+                ),
                 ContextualFeedbackSeverity::ERROR
             );
             return $this->redirect('index');
@@ -336,8 +336,8 @@ class OAuthModuleController extends ActionController
         if ($client === null) {
             $this->pushBackendFlash(
                 (string)LocalizationUtility::translate(
-                    'flash.clientNotFound',
-                    'oauth_service',
+                    'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:flash.clientNotFound',
+                    null,
                     [$clientUid]
                 ),
                 ContextualFeedbackSeverity::ERROR
@@ -352,8 +352,8 @@ class OAuthModuleController extends ActionController
         } catch (\Throwable $e) {
             $this->pushBackendFlash(
                 (string)LocalizationUtility::translate(
-                    'flash.tokenAcquisitionFailed',
-                    'oauth_service',
+                    'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:flash.tokenAcquisitionFailed',
+                    null,
                     [$e->getMessage()]
                 ),
                 ContextualFeedbackSeverity::ERROR
@@ -363,7 +363,9 @@ class OAuthModuleController extends ActionController
 
         if ($token === null || $token === '') {
             $this->pushBackendFlash(
-                (string)LocalizationUtility::translate('flash.noAccessToken', 'oauth_service'),
+                (string)LocalizationUtility::translate(
+                    'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:flash.noAccessToken'
+                ),
                 ContextualFeedbackSeverity::ERROR
             );
             return $this->redirect('index');
@@ -371,8 +373,8 @@ class OAuthModuleController extends ActionController
 
         $this->pushBackendFlash(
             (string)LocalizationUtility::translate(
-                'flash.tokenAcquired',
-                'oauth_service',
+                'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:flash.tokenAcquired',
+                null,
                 [$providerIdentifier, strlen($token)]
             ),
             ContextualFeedbackSeverity::OK

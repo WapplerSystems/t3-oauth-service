@@ -169,6 +169,15 @@
                                                         title="{f:translate(key: 'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.fetchToken.description')}">
                                                         <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.fetchToken"/>
                                                     </f:link.action>
+                                                    <f:if condition="{clientHealthCheckUrl.{client.uid}}">
+                                                        <f:link.action
+                                                            action="checkConnection"
+                                                            arguments="{client: client.uid}"
+                                                            class="btn btn-default"
+                                                            title="{f:translate(key: 'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.checkConnection.description')}">
+                                                            <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.checkConnection"/>
+                                                        </f:link.action>
+                                                    </f:if>
                                                 </div>
                                             </f:if>
                                         </div>
@@ -272,6 +281,18 @@
                                                                     {f:translate(key: 'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:connection.remoteSubject')}: {conn.remote_subject}
                                                                 </div>
                                                             </f:if>
+                                                            <f:if condition="{clientTokenClaims.{client.uid}.scopes}">
+                                                                <div style="opacity:.75; font-size: 12px;">
+                                                                    <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:token.claims.scopes"/>
+                                                                    <code>{clientTokenClaims.{client.uid}.scopes}</code>
+                                                                </div>
+                                                            </f:if>
+                                                            <f:if condition="{clientTokenClaims.{client.uid}.subject}">
+                                                                <div style="opacity:.75; font-size: 12px;">
+                                                                    <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:token.claims.subject"/>
+                                                                    {clientTokenClaims.{client.uid}.subject}
+                                                                </div>
+                                                            </f:if>
                                                         </td>
 
                                                         <td>
@@ -340,9 +361,25 @@
                                                         <td>
                                                             <f:if condition="{conn.lastCheckAt} > 0">
                                                                 <f:then>
-                                                                    {conn.lastCheckAt -> f:format.date(format: 'Y-m-d H:i')}
+                                                                    <div>{conn.lastCheckAt -> f:format.date(format: 'Y-m-d H:i')}</div>
+                                                                    <f:if condition="{conn.lastErrorCode} == 0">
+                                                                        <f:then>
+                                                                            <span class="label label-success">
+                                                                                <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:check.status.healthy"/>
+                                                                            </span>
+                                                                        </f:then>
+                                                                        <f:else>
+                                                                            <span class="label label-danger">
+                                                                                <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:check.status.failed"/>
+                                                                            </span>
+                                                                        </f:else>
+                                                                    </f:if>
                                                                 </f:then>
-                                                                <f:else>-</f:else>
+                                                                <f:else>
+                                                                    <span class="text-muted">
+                                                                        <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:check.status.unknown"/>
+                                                                    </span>
+                                                                </f:else>
                                                             </f:if>
                                                         </td>
 
@@ -364,6 +401,16 @@
 
                                                         <td style="white-space: nowrap;">
                                                             <div class="btn-group" role="group">
+
+                                                                <f:if condition="{clientHealthCheckUrl.{client.uid}}">
+                                                                    <f:link.action
+                                                                        action="checkConnection"
+                                                                        arguments="{client: client.uid}"
+                                                                        class="btn btn-default btn-sm"
+                                                                        title="{f:translate(key: 'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.checkConnection.description')}">
+                                                                        <f:translate key="LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:action.checkConnection"/>
+                                                                    </f:link.action>
+                                                                </f:if>
 
                                                                 <f:if condition="{conn.status} != 'connected'">
                                                                     <f:link.action

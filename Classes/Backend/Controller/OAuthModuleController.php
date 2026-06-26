@@ -25,7 +25,9 @@ use WapplerSystems\OauthService\Domain\Repository\ClientRepository;
 use WapplerSystems\OauthService\Domain\Repository\ConnectionRepository;
 use WapplerSystems\OauthService\Provider\ProviderRegistry;
 use WapplerSystems\OauthService\Provider\Type\ProviderTypeResolver;
+use WapplerSystems\OauthService\Service\ConnectionHealthService;
 use WapplerSystems\OauthService\Service\MonitorTaskStatusService;
+use WapplerSystems\OauthService\Service\OAuthClientService;
 use WapplerSystems\OauthService\Service\OAuthFlowService;
 use WapplerSystems\OauthService\Service\TokenAcquisitionService;
 
@@ -45,6 +47,8 @@ class OAuthModuleController extends ActionController
         private readonly MonitorTaskStatusService $monitorTaskStatusService,
         private readonly ProviderTypeResolver     $providerTypeResolver,
         private readonly TokenAcquisitionService  $tokenAcquisitionService,
+        private readonly OAuthClientService       $oAuthClientService,
+        private readonly ConnectionHealthService  $connectionHealthService,
     ) {}
 
     public function indexAction(): ResponseInterface
@@ -77,13 +81,29 @@ class OAuthModuleController extends ActionController
         $clientCapabilities = [];
         $clientMetadataFormatted = [];
         $clientTokenStatus = [];
+        $clientHealthCheckUrl = [];
+        $clientTokenClaims = [];
         foreach ($configuredClients as $client) {
             $uid = (int)$client->getUid();
+            $provider = (string)$client->getProvider();
             $clientCapabilities[$uid] = $this->resolveClientCapabilities($client);
             $clientMetadataFormatted[$uid] = $this->formatClientMetadata((string)($client->getMetadata() ?? ''));
-            $clientTokenStatus[$uid] = $this->tokenAcquisitionService->getCachedTokenStatus(
-                (string)$client->getProvider()
-            );
+            $clientTokenStatus[$uid] = $this->tokenAcquisitionService->getCachedTokenStatus($provider);
+
+            // Whether a live API health probe is available for this provider.
+            try {
+                $clientHealthCheckUrl[$uid] = $this->clientRegistry->get($provider)->healthCheckUrl;
+            } catch (\Throwable $e) {
+                $clientHealthCheckUrl[$uid] = '';
+            }
+
+            // Decoded JWT claims of the stored connection token (no network call).
+            $connection = $this->oAuthClientService->getActiveConnectionByClientUid($uid);
+            $clientTokenClaims[$uid] = ($connection !== null && (string)($connection['access_token'] ?? '') !== '')
+                ? ConnectionHealthService::summarizeClaims(
+                    ConnectionHealthService::decodeJwtClaims((string)$connection['access_token'])
+                )
+                : [];
         }
 
         $view->assignMultiple([
@@ -92,6 +112,8 @@ class OAuthModuleController extends ActionController
             'clientCapabilities' => $clientCapabilities,
             'clientMetadataFormatted' => $clientMetadataFormatted,
             'clientTokenStatus' => $clientTokenStatus,
+            'clientHealthCheckUrl' => $clientHealthCheckUrl,
+            'clientTokenClaims' => $clientTokenClaims,
             'callbackUrl' => $callbackUrl,
             'now' => time(),
             'monitorState' => $monitorStatus['state'],
@@ -379,6 +401,116 @@ class OAuthModuleController extends ActionController
             ),
             ContextualFeedbackSeverity::OK
         );
+        return $this->redirect('index');
+    }
+
+    /**
+     * Live health probe: calls the provider's configured healthCheckUrl with the
+     * client's current token and reports whether the token actually works against
+     * the API — catching unexpired-but-unusable tokens (wrong API version, revoked
+     * scope, …) that the expiry-only monitor cannot see. The result is persisted
+     * into the connection's last_check_* fields.
+     */
+    public function checkConnectionAction(): ResponseInterface
+    {
+        $clientUid = (int)($this->request->getArgument('client') ?? 0);
+        if ($clientUid <= 0) {
+            $this->pushBackendFlash(
+                (string)LocalizationUtility::translate(
+                    'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:flash.invalidClient'
+                ),
+                ContextualFeedbackSeverity::ERROR
+            );
+            return $this->redirect('index');
+        }
+
+        $client = $this->clientRepository->findByUid($clientUid);
+        if ($client === null) {
+            $this->pushBackendFlash(
+                (string)LocalizationUtility::translate(
+                    'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:flash.clientNotFound',
+                    null,
+                    [$clientUid]
+                ),
+                ContextualFeedbackSeverity::ERROR
+            );
+            return $this->redirect('index');
+        }
+
+        $providerIdentifier = (string)$client->getProvider();
+        try {
+            $healthCheckUrl = $this->clientRegistry->get($providerIdentifier)->healthCheckUrl;
+        } catch (\Throwable $e) {
+            $healthCheckUrl = '';
+        }
+        if ($healthCheckUrl === '') {
+            $this->pushBackendFlash(
+                (string)LocalizationUtility::translate(
+                    'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:flash.healthCheckNotConfigured',
+                    null,
+                    [$providerIdentifier]
+                ),
+                ContextualFeedbackSeverity::INFO
+            );
+            return $this->redirect('index');
+        }
+
+        // Prefer an existing Authorization-Code connection (so we test the very
+        // token the consumers use); fall back to a client_credentials token.
+        $token = '';
+        $connectionUid = 0;
+        $connection = $this->oAuthClientService->getActiveConnectionByClientUid($clientUid);
+        if ($connection !== null && (string)($connection['access_token'] ?? '') !== '') {
+            $token = (string)$connection['access_token'];
+            $connectionUid = (int)($connection['uid'] ?? 0);
+        } else {
+            try {
+                $token = (string)($this->tokenAcquisitionService->getClientCredentialsToken($providerIdentifier) ?? '');
+            } catch (\Throwable $e) {
+                $token = '';
+            }
+        }
+
+        if ($token === '') {
+            $this->pushBackendFlash(
+                (string)LocalizationUtility::translate(
+                    'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:flash.noAccessToken'
+                ),
+                ContextualFeedbackSeverity::ERROR
+            );
+            return $this->redirect('index');
+        }
+
+        $result = $this->connectionHealthService->probe($healthCheckUrl, $token);
+
+        if ($connectionUid > 0) {
+            $this->connectionRepository->updateFields($connectionUid, [
+                'last_check_at' => time(),
+                'last_error_code' => $result['ok'] ? 0 : (int)$result['status'],
+                'last_error_message' => $result['ok'] ? '' : trim($result['status'] . ': ' . $result['message']),
+            ]);
+        }
+
+        if ($result['ok']) {
+            $this->pushBackendFlash(
+                (string)LocalizationUtility::translate(
+                    'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:flash.healthCheckOk',
+                    null,
+                    [$providerIdentifier, (string)$result['status']]
+                ),
+                ContextualFeedbackSeverity::OK
+            );
+        } else {
+            $this->pushBackendFlash(
+                (string)LocalizationUtility::translate(
+                    'LLL:EXT:oauth_service/Resources/Private/Language/locallang_mod.xlf:flash.healthCheckFailed',
+                    null,
+                    [$providerIdentifier, (string)$result['status'], $result['message']]
+                ),
+                ContextualFeedbackSeverity::ERROR
+            );
+        }
+
         return $this->redirect('index');
     }
 

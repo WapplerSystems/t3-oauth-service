@@ -506,6 +506,66 @@
 				<target>Fehlerdetails anzeigen</target>
 			</trans-unit>
 
+			<trans-unit id="action.checkConnection">
+				<source>Check API</source>
+				<target>API prüfen</target>
+			</trans-unit>
+
+			<trans-unit id="action.checkConnection.description">
+				<source>Calls the provider's API with the current token to verify it actually works — not just that it is unexpired. Surfaces version/scope mismatches the expiry monitor cannot detect.</source>
+				<target>Ruft die Provider-API mit dem aktuellen Token auf und prüft, ob er tatsächlich funktioniert – nicht nur, ob er unabgelaufen ist. Macht Versions-/Scope-Probleme sichtbar, die die Ablaufüberwachung nicht erkennt.</target>
+			</trans-unit>
+
+			<trans-unit id="check.status.healthy">
+				<source>API reachable</source>
+				<target>API erreichbar</target>
+			</trans-unit>
+
+			<trans-unit id="check.status.failed">
+				<source>API check failed</source>
+				<target>API-Prüfung fehlgeschlagen</target>
+			</trans-unit>
+
+			<trans-unit id="check.status.unknown">
+				<source>API not checked yet</source>
+				<target>API noch nicht geprüft</target>
+			</trans-unit>
+
+			<trans-unit id="check.lastChecked">
+				<source>Last API check:</source>
+				<target>Letzte API-Prüfung:</target>
+			</trans-unit>
+
+			<trans-unit id="token.claims.scopes">
+				<source>Scopes:</source>
+				<target>Scopes:</target>
+			</trans-unit>
+
+			<trans-unit id="token.claims.expires">
+				<source>Token expires:</source>
+				<target>Token läuft ab:</target>
+			</trans-unit>
+
+			<trans-unit id="token.claims.subject">
+				<source>Subject:</source>
+				<target>Subjekt:</target>
+			</trans-unit>
+
+			<trans-unit id="flash.healthCheckNotConfigured">
+				<source>No API health check is configured for provider "%s".</source>
+				<target>Für den Provider "%s" ist keine API-Prüfung konfiguriert.</target>
+			</trans-unit>
+
+			<trans-unit id="flash.healthCheckOk">
+				<source>API check for "%s" succeeded (HTTP %s) — the token works against the API.</source>
+				<target>API-Prüfung für "%s" erfolgreich (HTTP %s) – der Token funktioniert gegen die API.</target>
+			</trans-unit>
+
+			<trans-unit id="flash.healthCheckFailed">
+				<source>API check for "%s" failed: HTTP %s %s</source>
+				<target>API-Prüfung für "%s" fehlgeschlagen: HTTP %s %s</target>
+			</trans-unit>
+
 		</body>
 	</file>
 </xliff>

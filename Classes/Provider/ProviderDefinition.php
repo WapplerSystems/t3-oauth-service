@@ -28,6 +28,16 @@ final readonly class ProviderDefinition
          * extension is responsible for safe HTML.
          */
         public string $setupInstructionsPath = '',
+        /**
+         * Optional resource endpoint used to verify that an acquired token
+         * actually works against the provider's API (not just that it is
+         * unexpired). The backend module performs a GET against this URL with
+         * the bearer token; a 2xx response counts as healthy, any other status
+         * surfaces the provider's error message (e.g. CleverReach's
+         * "v2 token on higher version" for an API-version mismatch).
+         * Leave empty to disable the live health probe for this provider.
+         */
+        public string $healthCheckUrl = '',
     ) {}
 
     /**

@@ -180,6 +180,54 @@
 				<source>Roles:</source>
 			</trans-unit>
 
+			<trans-unit id="action.checkConnection">
+				<source>Check API</source>
+			</trans-unit>
+
+			<trans-unit id="action.checkConnection.description">
+				<source>Calls the provider's API with the current token to verify it actually works — not just that it is unexpired. Surfaces version/scope mismatches the expiry monitor cannot detect.</source>
+			</trans-unit>
+
+			<trans-unit id="check.status.healthy">
+				<source>API reachable</source>
+			</trans-unit>
+
+			<trans-unit id="check.status.failed">
+				<source>API check failed</source>
+			</trans-unit>
+
+			<trans-unit id="check.status.unknown">
+				<source>API not checked yet</source>
+			</trans-unit>
+
+			<trans-unit id="check.lastChecked">
+				<source>Last API check:</source>
+			</trans-unit>
+
+			<trans-unit id="token.claims.scopes">
+				<source>Scopes:</source>
+			</trans-unit>
+
+			<trans-unit id="token.claims.expires">
+				<source>Token expires:</source>
+			</trans-unit>
+
+			<trans-unit id="token.claims.subject">
+				<source>Subject:</source>
+			</trans-unit>
+
+			<trans-unit id="flash.healthCheckNotConfigured">
+				<source>No API health check is configured for provider "%s".</source>
+			</trans-unit>
+
+			<trans-unit id="flash.healthCheckOk">
+				<source>API check for "%s" succeeded (HTTP %s) — the token works against the API.</source>
+			</trans-unit>
+
+			<trans-unit id="flash.healthCheckFailed">
+				<source>API check for "%s" failed: HTTP %s %s</source>
+			</trans-unit>
+
 			<trans-unit id="connect.intro">
 				<source>The OAuth client has been saved. The next step is to authorize it against the provider — you will be redirected to the provider's login page where you sign in (or are already signed in) and confirm the requested permissions. After the redirect back, this OAuth client will have an active connection that the system can refresh in the background.</source>
 			</trans-unit>

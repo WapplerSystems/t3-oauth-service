@@ -5,6 +5,7 @@ namespace WapplerSystems\OauthService\Service;
 
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Http\RequestFactory;
+use WapplerSystems\OauthService\Domain\Model\Client;
 use WapplerSystems\OauthService\Provider\ProviderDefinition;
 
 /**
@@ -31,12 +32,22 @@ final class MetadataDiscoveryService
 
     /**
      * Resolves the authorization endpoint for a provider.
-     * Priority: manual authorizationUrl > metadata discovery
+     * Priority: manual authorizationUrl > per-client baseUrl + authorizationPath > metadata discovery
+     *
+     * The per-client step supports self-hosted providers (Mautic, Keycloak, ...)
+     * where the host differs per installation: the admin sets a "baseUrl" key in
+     * the client's metadata JSON (tx_oauthsvc_client.metadata), and the provider
+     * definition supplies the fixed path via $authorizationPath.
      */
-    public function resolveAuthorizationUrl(ProviderDefinition $provider): string
+    public function resolveAuthorizationUrl(ProviderDefinition $provider, ?Client $client = null): string
     {
         if ($provider->authorizationUrl !== '') {
             return $provider->authorizationUrl;
+        }
+
+        $perClientUrl = $this->resolveFromClientBaseUrl($provider, $client, $provider->authorizationPath);
+        if ($perClientUrl !== '') {
+            return $perClientUrl;
         }
 
         $metadata = $this->fetchMetadata($provider);
@@ -45,16 +56,41 @@ final class MetadataDiscoveryService
 
     /**
      * Resolves the token endpoint for a provider.
-     * Priority: manual tokenUrl > metadata discovery
+     * Priority: manual tokenUrl > per-client baseUrl + tokenPath > metadata discovery
+     * See resolveAuthorizationUrl() for the per-client mechanism.
      */
-    public function resolveTokenUrl(ProviderDefinition $provider): string
+    public function resolveTokenUrl(ProviderDefinition $provider, ?Client $client = null): string
     {
         if ($provider->tokenUrl !== '') {
             return $provider->tokenUrl;
         }
 
+        $perClientUrl = $this->resolveFromClientBaseUrl($provider, $client, $provider->tokenPath);
+        if ($perClientUrl !== '') {
+            return $perClientUrl;
+        }
+
         $metadata = $this->fetchMetadata($provider);
         return $metadata['token_endpoint'] ?? '';
+    }
+
+    /**
+     * Combines the client's "baseUrl" metadata entry with the given provider
+     * path into a full endpoint URL. Returns '' when either half is missing,
+     * so callers can fall through to metadata discovery unchanged.
+     */
+    private function resolveFromClientBaseUrl(ProviderDefinition $provider, ?Client $client, string $path): string
+    {
+        if ($client === null || $path === '') {
+            return '';
+        }
+
+        $baseUrl = (string)$client->getMetadataValue('baseUrl', '');
+        if ($baseUrl === '') {
+            return '';
+        }
+
+        return rtrim($baseUrl, '/') . '/' . ltrim($path, '/');
     }
 
     /**

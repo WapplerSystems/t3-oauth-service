@@ -197,7 +197,7 @@ final class OAuthFlowService
             ->withScheme($request->getUri()->getScheme())
             ->__toString();
 
-        $authorizationUrl = $this->metadataDiscoveryService->resolveAuthorizationUrl($provider);
+        $authorizationUrl = $this->metadataDiscoveryService->resolveAuthorizationUrl($provider, $client);
         if ($authorizationUrl === '') {
             throw new \RuntimeException('No authorization endpoint configured or discoverable for provider: ' . $provider->identifier);
         }

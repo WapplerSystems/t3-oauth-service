@@ -38,6 +38,20 @@ final readonly class ProviderDefinition
          * Leave empty to disable the live health probe for this provider.
          */
         public string $healthCheckUrl = '',
+        /**
+         * Relative path appended to a per-client base URL to build the
+         * authorization endpoint for self-hosted providers (e.g. Mautic,
+         * Keycloak) where the host differs per installation instead of being
+         * fixed provider-wide. Ignored when $authorizationUrl is set or when
+         * the client has no "baseUrl" entry in its metadata JSON.
+         * Example: '/oauth/v2/authorize'
+         */
+        public string $authorizationPath = '',
+        /**
+         * Same as $authorizationPath but for the token endpoint.
+         * Example: '/oauth/v2/token'
+         */
+        public string $tokenPath = '',
     ) {}
 
     /**

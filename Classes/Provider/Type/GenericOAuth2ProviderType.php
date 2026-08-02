@@ -58,7 +58,7 @@ final class GenericOAuth2ProviderType implements OAuthProviderTypeInterface
             $formParams['code_verifier'] = $codeVerifier;
         }
 
-        $tokenUrl = $this->metadataDiscoveryService->resolveTokenUrl($providerDefinition);
+        $tokenUrl = $this->metadataDiscoveryService->resolveTokenUrl($providerDefinition, $client);
         if ($tokenUrl === '') {
             throw new \RuntimeException('No token endpoint configured or discoverable for provider: ' . $providerDefinition->identifier);
         }
@@ -85,7 +85,7 @@ final class GenericOAuth2ProviderType implements OAuthProviderTypeInterface
         $providerKey = $client->getProvider();
         $provider = $this->providerRegistry->get((string)$providerKey);
 
-        $tokenEndpoint = $this->metadataDiscoveryService->resolveTokenUrl($provider);
+        $tokenEndpoint = $this->metadataDiscoveryService->resolveTokenUrl($provider, $client);
         if ($tokenEndpoint === '') {
             throw new \RuntimeException('Missing token endpoint for provider: ' . $providerKey);
         }
@@ -122,7 +122,7 @@ final class GenericOAuth2ProviderType implements OAuthProviderTypeInterface
         string $clientSecret,
         array $scopes = []
     ): array {
-        $tokenUrl = $this->metadataDiscoveryService->resolveTokenUrl($providerDefinition);
+        $tokenUrl = $this->metadataDiscoveryService->resolveTokenUrl($providerDefinition, $client);
         if ($tokenUrl === '') {
             throw new \RuntimeException('No token endpoint configured or discoverable for provider: ' . $providerDefinition->identifier);
         }
